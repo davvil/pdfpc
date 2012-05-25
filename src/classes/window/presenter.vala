@@ -301,7 +301,8 @@ namespace org.westhoffswelt.pdfpresenter.Window {
 
         public override void show() {
             base.show();
-            this.overview.setMaxWidth(this.slideViews.allocation.width);
+            this.overview.set_available_space(this.allocation.width,
+                                              (int)Math.floor(this.allocation.height * 0.9));
         }
 
         protected void build_layout() {
@@ -547,7 +548,7 @@ namespace org.westhoffswelt.pdfpresenter.Window {
         public void show_overview() {
             this.slideViews.hide();
             this.overview.show();
-            this.overview.set_current_button(this.presentation_controller.get_current_user_slide_number());
+            this.overview.current_slide = this.presentation_controller.get_current_user_slide_number();
         }
 
         public void hide_overview() {
