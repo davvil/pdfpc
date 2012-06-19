@@ -99,10 +99,16 @@ namespace pdfpc {
         protected TimerLabel timer;
 
         /**
+         * "Main" view of current slide
+         */
+        public View.Pdf main_view = null;
+
+        /**
          * Instantiate a new controller
          */
         public PresentationController( Metadata.Pdf metadata, bool allow_black_on_end ) {
             this.metadata = metadata;
+            this.metadata.controller = this;
             this.black_on_end = allow_black_on_end;
 
             this.controllables = new List<Controllable>();
@@ -134,6 +140,14 @@ namespace pdfpc {
             
             this.current_slide_number = 0;
             this.current_user_slide_number = 0;
+        }
+
+        /*
+         * Inform metadata of quit, and then quit.
+         */
+        public void quit() {
+            this.metadata.quit();
+            Gtk.main_quit();
         }
 
         public void set_overview(Window.Overview o) {
@@ -209,17 +223,15 @@ namespace pdfpc {
                             exit_some_state = true;
                         }
                         if (this.timer.is_paused()) {
-			    this.toggle_pause();
+                             this.toggle_pause();
                             exit_some_state = true;
                         }
-			if (!exit_some_state) {
-	                    this.metadata.save_to_disk();
-        	            Gtk.main_quit();
-			}	
+                        if (!exit_some_state) {
+                            this.quit();
+                        }
                     break;
                     case 0x071:  /* q */
-                        this.metadata.save_to_disk();
-                        Gtk.main_quit();
+                        this.quit();
                     break;
                     case 0x072: /* r */
                         this.controllables_reset();
@@ -249,7 +261,7 @@ namespace pdfpc {
                     case 0x073: /* s */
                         this.start();
                     break;
-		    case 0x070: /* p */
+                    case 0x070: /* p */
                     case 0xff13: /* pause */
                         this.toggle_pause();
                     break;
@@ -283,8 +295,7 @@ namespace pdfpc {
             switch( key.keyval ) {
                 case 0xff1b: /* Escape */
                 case 0x071:  /* q */
-                    this.metadata.save_to_disk();
-                    Gtk.main_quit();
+                    this.quit();
                     handled = true;
                 break;
                 case 0x072: /* r */
@@ -379,6 +390,13 @@ namespace pdfpc {
                     break;
                 }
             }
+        }
+        
+        /**
+         * Get the PDF URL
+         */
+        public string? get_pdf_url() {
+            return this.metadata.pdf_url;
         }
         
         /**
@@ -502,6 +520,8 @@ namespace pdfpc {
 
             //controllable.set_controller( this );
             this.controllables.append( controllable );
+            if (this.main_view == null)
+                this.main_view = controllable.get_main_view();
             
             return true;
         }
@@ -822,6 +842,26 @@ namespace pdfpc {
             var tm = Time.local( time_t() );
             tm.strptime( t + ":00", "%H:%M:%S" );
             return tm.mktime();
+        }
+        
+        /**
+         * Give the Gdk.Rectangle corresponding to the Poppler.Rectangle for the nth
+         * controllable's main view.  Also, return the XID for the view's window,
+         * useful for overlays.
+         */
+        public ulong overlay_pos(int n, Poppler.Rectangle area, out Gdk.Rectangle rect) {
+            Controllable c = this.controllables.nth_data(n);
+            if (c == null) {
+                rect = Gdk.Rectangle();
+                return 0;
+            }
+            View.Pdf view = c.get_main_view();
+            if (view == null) {
+                rect = Gdk.Rectangle();
+                return 0;
+            }
+            rect = view.convert_poppler_rectangle_to_gdk_rectangle(area);
+            return (ulong)Gdk.x11_drawable_get_xid(view.get_window());
         }
     }
 }

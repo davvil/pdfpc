@@ -29,7 +29,7 @@ namespace pdfpc.Metadata {
     public class Pdf: Base
     {
         protected string? pdf_fname = null;
-        protected string? pdf_url = null;
+        public string? pdf_url = null;
         protected string? pdfpc_url = null;
 
         /**
@@ -187,6 +187,15 @@ namespace pdfpc.Metadata {
             } else {
                 this.pdfpc_url = file.get_uri();
             } 
+        }
+
+        /**
+         * Called on quit
+         */
+        public void quit() {
+            this.save_to_disk();
+            foreach (var mapping in this.action_mapping)
+                mapping.deactivate();
         }
 
         /**
@@ -464,6 +473,72 @@ namespace pdfpc.Metadata {
             MutexLocks.poppler.unlock();
 
             return document;
+        }
+
+        /**
+         * Variables used to keep track of the action mappings for the current
+         * page.
+         */
+        private int mapping_page_num = -1;
+        private GLib.List<ActionMapping> action_mapping;
+        private ActionMapping[] blanks = {new ControlledMovie(), new LinkAction()};
+        public weak PresentationController controller = null;
+
+        /**
+         * Return the action mappings (link and annotation mappings) for the
+         * specified page.  If that page is different from the previous one,
+         * destroy the existing action mappings and create new mappings for
+         * the new page.
+         */
+        public unowned GLib.List<ActionMapping> get_action_mapping( int page_num ) {
+            if (page_num != this.mapping_page_num) {
+                foreach (var mapping in this.action_mapping)
+                    mapping.deactivate();
+                this.action_mapping = null; //.Is this really the correct way to clear a list?
+
+#if VALA_0_16
+                GLib.List<Poppler.LinkMapping> link_mappings;
+#else
+                unowned GLib.List<unowned Poppler.LinkMapping> link_mappings;
+#endif
+                link_mappings = this.get_document().get_page(page_num).get_link_mapping();
+                foreach (unowned Poppler.LinkMapping mapping in link_mappings) {
+                    foreach (var blank in blanks) {
+                        var action = blank.new_from_link_mapping(mapping, this.controller, this.document);
+                        if (action != null) {
+                            this.action_mapping.append(action);
+                            break;
+                        }
+                    }
+                }
+                // Free the mapping memory; already in lock
+#if !VALA_0_16
+                Poppler.Page.free_link_mapping(link_mappings);
+#endif
+
+#if VALA_0_16
+                GLib.List<Poppler.AnnotMapping> annot_mappings;
+#else
+                unowned GLib.List<Poppler.AnnotMapping> annot_mappings;
+#endif
+                annot_mappings = this.get_document().get_page(page_num).get_annot_mapping();
+                foreach (unowned Poppler.AnnotMapping mapping in annot_mappings) {
+                    foreach (var blank in blanks) {
+                        var action = blank.new_from_annot_mapping(mapping, this.controller, this.document);
+                        if (action != null) {
+                            this.action_mapping.append(action);
+                            break;
+                        }
+                    }
+                }
+                // Free the mapping memory; already in lock
+#if !VALA_0_16
+                Poppler.Page.free_annot_mapping(annot_mappings);
+#endif
+
+                this.mapping_page_num = page_num;
+            }
+            return this.action_mapping;
         }
     }
 }
