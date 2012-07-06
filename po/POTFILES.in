@@ -1,0 +1,3 @@
+src/pdfpc.vala
+[type: gettext/glade]src/ui/about.ui
+[type: gettext/glade]src/ui/main.ui

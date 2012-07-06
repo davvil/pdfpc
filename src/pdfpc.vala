@@ -30,6 +30,13 @@ namespace pdfpc {
      * initializing the application, like commandline parsing and window creation.
      */
     public class Application: GLib.Object {
+
+		/**
+		 * This string contains the path where the UI is stored
+		 */
+
+		string basepath;
+
         /**
          * Window which shows the current slide in fullscreen
          *
@@ -56,6 +63,18 @@ namespace pdfpc {
          * rendering state
          */
         private CacheStatus cache_status;
+
+		/**
+		 * Interface elements
+		 */
+
+		private Button ui_go;
+		private CheckButton ui_sw_scr;
+		private CheckButton ui_add_black_slide;
+		private SpinButton ui_duration;
+		private SpinButton ui_alert;
+		private SpinButton ui_size;
+		private FileChooserButton ui_file;
 
         /**
          * Commandline option parser entry definitions
@@ -131,33 +150,12 @@ namespace pdfpc {
          * Main application function, which instantiates the windows and
          * initializes the Gtk system.
          */
-        public void run( string[] args ) {
-            stdout.printf( "pdfpc v3.0\n"
-                           + "(C) 2012 David Vilar\n"
-                           + "(C) 2009-2011 Jakob Westhoff\n\n" );
-
-            Gdk.threads_init();
-            Gtk.init( ref args );
-
-            string pdfFilename = this.parse_command_line_options( args );
-            if (Options.list_actions) {
-				stdout.printf("Config file commands accepted by pdfpc:\n");
-				string[] actions = PresentationController.getActionDescriptions();
-				for (int i = 0; i < actions.length; i+=2) {
-					string tabAlignment = "\t";
-					if (actions[i].length < 8)
-						tabAlignment += "\t";
-					stdout.printf("\t%s%s=> %s\n", actions[i], tabAlignment, actions[i+1]);
-				}
-                return;
-            }
+        public void do_slide( string pdfFilename ) {
+			
 			if (pdfFilename == null) {
 				stderr.printf( "Error: No pdf file given\n");
 				Posix.exit(1);
 			}
-
-            // Initialize the application wide mutex objects
-            MutexLocks.init();
 
             stdout.printf( "Initializing rendering...\n" );
 
@@ -168,11 +166,11 @@ namespace pdfpc {
             // Initialize global controller and CacheStatus, to manage
             // crosscutting concerns between the different windows.
             this.controller = new PresentationController( metadata, Options.black_on_end );
-            this.cache_status = new CacheStatus();
 
             ConfigFileReader configFileReader = new ConfigFileReader(this.controller);
-            configFileReader.readConfig(etc_path + "/pdfpcrc");
-            configFileReader.readConfig(Environment.get_home_dir() + "/.pdfpcrc");
+            configFileReader.readConfig(GLib.Path.build_filename(etc_path, "/pdfpcrc"));
+			configFileReader.readConfig(GLib.Path.build_filename(Environment.get_home_dir(),".pdfpcrc"));
+            configFileReader.readConfig(GLib.Path.build_filename(Environment.get_home_dir(),".config","pdfpc","pdfpcrc"));
 
             var screen = Gdk.Screen.get_default();
             if ( !Options.windowed && !Options.single_screen && screen.get_n_monitors() > 1 ) {
@@ -214,9 +212,255 @@ namespace pdfpc {
 
             // Enter the Glib eventloop
             // Everything from this point on is completely signal based
-            Gdk.threads_enter();
             Gtk.main();
-            Gdk.threads_leave();
+			this.presentation_window.destroy();
+			this.presenter_window.destroy();
+			this.presentation_window=null;
+			this.presenter_window=null;
+			this.controller=null;
+        }
+
+		public void refresh_status() {
+
+			var fname = this.ui_file.get_file();
+			if (fname!=null) {
+				var uri = fname.get_uri();
+				if (uri==null) {
+					this.ui_go.sensitive=false;
+				} else {
+					this.ui_go.sensitive=true;
+				}
+			}else {
+				this.ui_go.sensitive=false;
+			}
+		}
+
+		private int read_configuration() {
+			
+			/****************************************************************************************
+			 * This function will read the configuration from the file ~/.pdf_presenter.cfg         *
+			 * If not, it will use that file to get the configuration                               *
+			 * Returns:                                                                             *
+			 *   0: on success                                                                      *
+			 *  -1: the config file doesn't exists                                                  *
+			 *  -2: can't read the config file                                                      *
+			 *  +N: parse error at line N in config file                                            *			 
+			 ****************************************************************************************/
+
+			bool failed=false;
+			FileInputStream file_read;
+			
+			string home=Environment.get_home_dir();
+			var config_file = File.new_for_path (GLib.Path.build_filename(home,".config","pdfpd","pdfpc.cfg"));
+			
+			if (!config_file.query_exists(null)) {
+				return -1;
+			}
+
+			try {
+				file_read=config_file.read(null);
+			} catch {
+				return -2;
+			}
+			var in_stream = new DataInputStream (file_read);
+			string line;
+			int line_counter=0;
+
+			while ((line = in_stream.read_line (null, null)) != null) {
+				line_counter++;
+				
+				// ignore comments
+				if (line[0]=='#') {
+					continue;
+				}
+				
+				// remove unwanted blank spaces
+				line.strip();
+
+				// ignore empty lines				
+				if (line.length==0) {
+					continue;
+				}
+				
+				if (line.has_prefix("switch_screens ")) {
+					if (line.substring(15)=="1") {
+						Options.display_switch=true;
+					} else {
+						Options.display_switch=false;
+					}
+					continue;
+				}
+				if (line.has_prefix("duration ")) {
+					Options.duration=int.parse(line.substring(9).strip());
+					continue;
+				}
+				if (line.has_prefix("last_minutes ")) {
+					Options.last_minutes=int.parse(line.substring(13).strip());
+					continue;
+				}
+				if (line.has_prefix("current_size ")) {
+					Options.current_size=int.parse(line.substring(13).strip());
+					continue;
+				}
+				failed=true;
+				break;
+			}
+
+			try {
+				in_stream.close(null);
+			} catch {
+			}
+			try {
+				file_read.close(null);
+			} catch {
+			}
+
+			if (failed) {
+				GLib.stderr.printf(_("Invalid parameter in config file %s (line %d)\n"),config_file.get_path(),line_counter);
+				return line_counter;
+			}
+			
+			return 0;
+		}
+
+		public int write_configuration() {
+
+			try {
+				FileOutputStream file_write;
+		
+				var home=Environment.get_home_dir();
+
+				var cfg_path=GLib.Path.build_filename(home,".config","pdfpd");
+				GLib.DirUtils.create_with_parents(cfg_path,493); // 493 = 755 in octal (for directory permissions)
+				var config_file = File.new_for_path (GLib.Path.build_filename(cfg_path,"pdfpc.cfg"));
+		
+				try {
+					file_write=config_file.replace(null,false,0,null);
+				} catch {
+					return -2;
+				}
+		
+				var out_stream = new DataOutputStream (file_write);
+			
+				if (Options.display_switch) {
+					out_stream.put_string("switch_screens 1\n",null);
+				} else {
+					out_stream.put_string("switch_screens 0\n",null);
+				}
+				out_stream.put_string("duration %u\n".printf(Options.duration));
+				out_stream.put_string("last_minutes %u\n".printf(Options.last_minutes));
+				out_stream.put_string("current_size %u\n".printf(Options.current_size));
+				
+			} catch (IOError e) {
+			}		
+			return 0;
+		}
+
+		
+        /**
+         * Main application function, which instantiates the windows and
+         * initializes the Gtk system.
+         */
+        public void run( string[] args ) {
+
+            stdout.printf( "pdfpc v3.2 alpha1\n"
+                           + "(C) 2012 David Vilar\n"
+                           + "(C) 2009-2011 Jakob Westhoff\n\n" );
+
+            Gdk.threads_init();
+            Gtk.init( ref args );
+
+			this.read_configuration ();
+			
+            string pdfFilename = this.parse_command_line_options( args );
+            if (Options.list_actions) {
+				stdout.printf("Config file commands accepted by pdfpc:\n");
+				string[] actions = PresentationController.getActionDescriptions();
+				for (int i = 0; i < actions.length; i+=2) {
+					string tabAlignment = "\t";
+					if (actions[i].length < 8)
+						tabAlignment += "\t";
+					stdout.printf("\t%s%s=> %s\n", actions[i], tabAlignment, actions[i+1]);
+				}
+                return;
+            }
+			
+			var file=File.new_for_path("/usr/share/pdfpc/main.ui");
+			if (file.query_exists()) {
+				this.basepath="/usr/share/pdfpc/";
+				Intl.bindtextdomain( "pdfpc", "/usr/share/locale");
+			} else {
+				this.basepath="/usr/local/share/pdfpc/";
+				Intl.bindtextdomain( "pdfpc", "/usr/local/share/locale");
+			}
+			Intl.textdomain("pdfpc");
+			Intl.bind_textdomain_codeset( "pdfpc", "UTF-8" );
+
+            // Initialize the application wide mutex objects
+            MutexLocks.init();
+
+			var builder = new Builder();
+			builder.add_from_file(GLib.Path.build_filename(this.basepath,"main.ui"));
+			var main_w = (Dialog)builder.get_object("main_dialog");
+			var builder2 = new Builder();
+			builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
+			var about_w = (Dialog)builder2.get_object("aboutdialog");
+
+			this.ui_go = (Button)builder.get_object("go_button");
+			this.ui_sw_scr = (CheckButton)builder.get_object("switch_screens");
+			this.ui_add_black_slide = (CheckButton)builder.get_object("add_black_slide");
+			this.ui_duration = (SpinButton)builder.get_object("duration_time");
+			this.ui_alert = (SpinButton)builder.get_object("alert_time");
+			this.ui_size = (SpinButton)builder.get_object("size_slide");
+			this.ui_file = (FileChooserButton)builder.get_object("pdf_file");
+			this.ui_file.file_set.connect(this.refresh_status);
+			this.ui_file.selection_changed.connect(this.refresh_status);
+
+			if (pdfFilename!=null) {
+				var fname = File.new_for_path(pdfFilename);
+				this.ui_file.set_file(fname);
+			}
+			
+            stdout.printf( "Initializing rendering... \n" );
+
+            // Initialize global controller and CacheStatus, to manage
+            // crosscutting concerns between the different windows.
+            this.cache_status = new CacheStatus();
+			
+			Gdk.threads_enter();
+			bool do_loop=true;
+			do {
+				this.ui_sw_scr.active=Options.display_switch;
+				this.ui_add_black_slide.active=Options.black_on_end;
+				this.ui_duration.value=Options.duration;
+				this.ui_alert.value=Options.last_minutes;
+				this.ui_size.value=Options.current_size;
+				main_w.show();
+				this.refresh_status ();
+				var res=main_w.run();
+				Options.display_switch=this.ui_sw_scr.active;
+				Options.black_on_end=this.ui_add_black_slide.active;
+				Options.duration=this.ui_duration.get_value_as_int();
+				Options.last_minutes=this.ui_alert.get_value_as_int();
+				Options.current_size=this.ui_size.get_value_as_int();
+				this.write_configuration();
+				main_w.hide();
+				switch(res) {
+				case 1:
+					this.do_slide (this.ui_file.get_file().get_uri());
+				break;
+				case 2:
+					about_w.show();
+					about_w.run();
+					about_w.hide();
+					continue;
+				break;
+				default:
+					do_loop=false;
+				break;
+				}
+			} while (do_loop);
+			Gdk.threads_leave();
         }
 
         /**
