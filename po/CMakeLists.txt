@@ -1,5 +1,3 @@
-set(TOP_SRCDIR "${CMAKE_SOURCE_DIR}/../..")
-
 install(FILES
         es.mo
 DESTINATION
