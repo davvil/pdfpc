@@ -87,12 +87,14 @@ namespace pdfpc {
             { "current-size", 'u', 0, OptionArg.INT, ref Options.current_size, "Percentage of the presenter screen to be used for the current slide. (Default 60)", "N" },
             { "overview-min-size", 'o', 0, OptionArg.INT, ref Options.min_overview_width, "Minimum width for the overview miniatures, in pixels. (Default 150)", "N" },
             { "switch-screens", 's', 0, 0, ref Options.display_switch, "Switch the presentation and the presenter screen.", null },
+			{ "no-switch-screens", 'n', 0, 0, ref Options.display_unswitch, "Unswitch the presentation and the presenter screen. It disables a previous -s parameter.", null },
             { "disable-cache", 'c', 0, 0, ref Options.disable_caching, "Disable caching and pre-rendering of slides to save memory at the cost of speed.", null },
             { "disable-compression", 'z', 0, 0, ref Options.disable_cache_compression, "Disable the compression of slide images to trade memory consumption for speed. (Avg. factor 30)", null },
             { "black-on-end", 'b', 0, 0, ref Options.black_on_end, "Add an additional black slide at the end of the presentation", null },
             { "single-screen", 'S', 0, 0, ref Options.single_screen, "Force to use only one screen", null },
             { "list-actions", 'L', 0, 0, ref Options.list_actions, "List actions supported in the config file(s)", null},
             { "windowed", 'w', 0, 0, ref Options.windowed, "Run in windowed mode (devel tool)", null},
+			{ "run-now", 'r', 0, 0, ref Options.run_now, "Launch the presentation directly, without showing the user interface", null},
             { null }
         };
 
@@ -166,6 +168,7 @@ namespace pdfpc {
             // Initialize global controller and CacheStatus, to manage
             // crosscutting concerns between the different windows.
             this.controller = new PresentationController( metadata, Options.black_on_end );
+            this.cache_status = new CacheStatus();
 
             ConfigFileReader configFileReader = new ConfigFileReader(this.controller);
             configFileReader.readConfig(GLib.Path.build_filename(etc_path, "/pdfpcrc"));
@@ -217,7 +220,11 @@ namespace pdfpc {
 			this.presenter_window.destroy();
 			this.presentation_window=null;
 			this.presenter_window=null;
+			// controller and cache status should have a destructor method, to ensure
+			// that all the memory is freed here (I'm not sure, but seems to be a little
+			// memory leak when launching a presentation over and over again)
 			this.controller=null;
+			this.cache_status=null;
         }
 
 		public void refresh_status() {
@@ -370,8 +377,12 @@ namespace pdfpc {
             Gdk.threads_init();
             Gtk.init( ref args );
 
+			// First, read the configuration with the last options used (to remember if we
+			// have to switch screens and so on)
 			this.read_configuration ();
-			
+
+			// Now, read the command line options, overwriting the ones set by the
+			// READ_CONFIGURATION function
             string pdfFilename = this.parse_command_line_options( args );
             if (Options.list_actions) {
 				stdout.printf("Config file commands accepted by pdfpc:\n");
@@ -384,7 +395,14 @@ namespace pdfpc {
 				}
                 return;
             }
+
+			// This option is needed because the previously stored configuration could mandate
+			// to switch the screens, but now the user doesn't want to do it from command line
+			if (Options.display_unswitch) {
+				Options.display_switch=false;
+			}
 			
+			// Find where the GUI definition files are (/usr or /usr/local) and set locale
 			var file=File.new_for_path("/usr/share/pdfpc/main.ui");
 			if (file.query_exists()) {
 				this.basepath="/usr/share/pdfpc/";
@@ -406,6 +424,7 @@ namespace pdfpc {
 			builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
 			var about_w = (Dialog)builder2.get_object("aboutdialog");
 
+			// Get access to all the important widgets in the GUI 
 			this.ui_go = (Button)builder.get_object("go_button");
 			this.ui_sw_scr = (CheckButton)builder.get_object("switch_screens");
 			this.ui_add_black_slide = (CheckButton)builder.get_object("add_black_slide");
@@ -421,45 +440,56 @@ namespace pdfpc {
 				this.ui_file.set_file(fname);
 			}
 			
-            stdout.printf( "Initializing rendering... \n" );
-
-            // Initialize global controller and CacheStatus, to manage
-            // crosscutting concerns between the different windows.
-            this.cache_status = new CacheStatus();
-			
 			Gdk.threads_enter();
-			bool do_loop=true;
-			do {
-				this.ui_sw_scr.active=Options.display_switch;
-				this.ui_add_black_slide.active=Options.black_on_end;
-				this.ui_duration.value=Options.duration;
-				this.ui_alert.value=Options.last_minutes;
-				this.ui_size.value=Options.current_size;
-				main_w.show();
-				this.refresh_status ();
-				var res=main_w.run();
-				Options.display_switch=this.ui_sw_scr.active;
-				Options.black_on_end=this.ui_add_black_slide.active;
-				Options.duration=this.ui_duration.get_value_as_int();
-				Options.last_minutes=this.ui_alert.get_value_as_int();
-				Options.current_size=this.ui_size.get_value_as_int();
-				this.write_configuration();
-				main_w.hide();
-				switch(res) {
-				case 1:
-					this.do_slide (this.ui_file.get_file().get_uri());
-				break;
-				case 2:
-					about_w.show();
-					about_w.run();
-					about_w.hide();
-					continue;
-				break;
-				default:
-					do_loop=false;
-				break;
-				}
-			} while (do_loop);
+
+			if (Options.run_now) {
+				// If the user set the -r option, launch the presentation just now
+				this.do_slide (pdfFilename);
+			} else {
+				bool do_loop=true;
+				do {
+
+					// Set the GUI options acording to the ones currently active
+					this.ui_sw_scr.active=Options.display_switch;
+					this.ui_add_black_slide.active=Options.black_on_end;
+					this.ui_duration.value=Options.duration;
+					this.ui_alert.value=Options.last_minutes;
+					this.ui_size.value=Options.current_size;
+					
+					main_w.show();
+					this.refresh_status();
+					var result=main_w.run();
+
+					// Update internal options acording to the ones in the GUI
+					Options.display_switch=this.ui_sw_scr.active;
+					Options.black_on_end=this.ui_add_black_slide.active;
+					Options.duration=this.ui_duration.get_value_as_int();
+					Options.last_minutes=this.ui_alert.get_value_as_int();
+					Options.current_size=this.ui_size.get_value_as_int();
+
+					// Remember the last used options
+					this.write_configuration();
+					
+					main_w.hide();
+					switch(result) {
+					case 1:
+						// Launch the presentation
+						this.do_slide (this.ui_file.get_file().get_uri());
+					break;
+					case 2:
+						// Show the ABOUT window
+						about_w.show();
+						about_w.run();
+						about_w.hide();
+						continue;
+					break;
+					default:
+						// Exit, Sasha Kinski :)
+						do_loop=false;
+					break;
+					}
+				} while (do_loop);
+			}
 			Gdk.threads_leave();
         }
 
