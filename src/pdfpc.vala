@@ -171,8 +171,8 @@ namespace pdfpc {
             this.cache_status = new CacheStatus();
 
             ConfigFileReader configFileReader = new ConfigFileReader(this.controller);
-            configFileReader.readConfig(GLib.Path.build_filename(etc_path, "/pdfpcrc"));
-			configFileReader.readConfig(GLib.Path.build_filename(Environment.get_home_dir(),".pdfpcrc"));
+            configFileReader.readConfig(GLib.Path.build_filename(etc_path, "pdfpcrc"));
+            configFileReader.readConfig(GLib.Path.build_filename(Environment.get_home_dir(),".pdfpcrc"));
             configFileReader.readConfig(GLib.Path.build_filename(Environment.get_home_dir(),".config","pdfpc","pdfpcrc"));
 
             var screen = Gdk.Screen.get_default();
