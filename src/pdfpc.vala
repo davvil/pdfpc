@@ -68,13 +68,16 @@ namespace pdfpc {
 		 * Interface elements
 		 */
 
-		private Button ui_go;
-		private CheckButton ui_sw_scr;
-		private CheckButton ui_add_black_slide;
-		private SpinButton ui_duration;
-		private SpinButton ui_alert;
-		private SpinButton ui_size;
-		private FileChooserButton ui_file;
+		private Gtk.Window main_w;
+		private Gtk.Button ui_go;
+		private Gtk.Button ui_exit;
+		private Gtk.Button ui_about;
+		private Gtk.CheckButton ui_sw_scr;
+		private Gtk.CheckButton ui_add_black_slide;
+		private Gtk.SpinButton ui_duration;
+		private Gtk.SpinButton ui_alert;
+		private Gtk.SpinButton ui_size;
+		private Gtk.FileChooserButton ui_file;
 
         /**
          * Commandline option parser entry definitions
@@ -148,6 +151,60 @@ namespace pdfpc {
             return presentation_window;
         }
 
+		/**
+		 * This callback kills the current presentation and shows the main window
+		 */
+
+		public void kill_presentation() {
+
+			this.controller.signal_close_presentation.disconnect(this.kill_presentation);
+			if (this.presentation_window!=null) {
+				this.presentation_window.destroy();
+				this.presentation_window=null;
+			}
+			if (this.presenter_window!=null) {
+				this.presenter_window.destroy();
+				this.presenter_window=null;
+			}
+			// controller and cache status should have a destructor method, to ensure
+			// that all the memory is freed here (I'm not sure, but seems to be a little
+			// memory leak when launching a presentation over and over again)
+			this.controller=null;
+			this.cache_status=null;
+
+			if (Options.run_now) {
+				// If we are running the presentation directly, now we have to exit
+				Gtk.main_quit();
+			} else {
+				// If not, we have to show the main window
+				this.main_w.show();
+			}
+		}
+
+
+		/**
+		 * This callback starts a presentation from the main window
+		 */
+		
+		public void start_presentation() {
+
+			this.main_w.hide();
+
+			// Update internal options acording to the ones in the GUI
+			Options.display_switch=this.ui_sw_scr.active;
+			Options.black_on_end=this.ui_add_black_slide.active;
+			Options.duration=this.ui_duration.get_value_as_int();
+			Options.last_minutes=this.ui_alert.get_value_as_int();
+			Options.current_size=this.ui_size.get_value_as_int();
+
+			// Remember the last used options
+			this.write_configuration();
+
+			// And launch the presentation
+			this.do_slide (this.ui_file.get_file().get_uri());
+			
+		}
+		
         /**
          * Main application function, which instantiates the windows and
          * initializes the Gtk system.
@@ -169,6 +226,7 @@ namespace pdfpc {
             // crosscutting concerns between the different windows.
             this.controller = new PresentationController( metadata, Options.black_on_end );
             this.cache_status = new CacheStatus();
+			this.controller.signal_close_presentation.connect(this.kill_presentation);
 
             ConfigFileReader configFileReader = new ConfigFileReader(this.controller);
             configFileReader.readConfig(GLib.Path.build_filename(etc_path, "pdfpcrc"));
@@ -212,19 +270,6 @@ namespace pdfpc {
                 this.presenter_window.show_all();
                 this.presenter_window.update();
             }
-
-            // Enter the Glib eventloop
-            // Everything from this point on is completely signal based
-            Gtk.main();
-			this.presentation_window.destroy();
-			this.presenter_window.destroy();
-			this.presentation_window=null;
-			this.presenter_window=null;
-			// controller and cache status should have a destructor method, to ensure
-			// that all the memory is freed here (I'm not sure, but seems to be a little
-			// memory leak when launching a presentation over and over again)
-			this.controller=null;
-			this.cache_status=null;
         }
 
 		public void refresh_status() {
@@ -419,22 +464,39 @@ namespace pdfpc {
 
 			var builder = new Builder();
 			builder.add_from_file(GLib.Path.build_filename(this.basepath,"main.ui"));
-			var main_w = (Dialog)builder.get_object("main_dialog");
-			var builder2 = new Builder();
+			this.main_w = (Gtk.Window)builder.get_object("main_window");
+
+			var builder2 = new Builder();		
 			builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
-			var about_w = (Dialog)builder2.get_object("aboutdialog");
+			var about_w = (Gtk.Dialog)builder2.get_object("aboutdialog");
 
 			// Get access to all the important widgets in the GUI 
-			this.ui_go = (Button)builder.get_object("go_button");
-			this.ui_sw_scr = (CheckButton)builder.get_object("switch_screens");
-			this.ui_add_black_slide = (CheckButton)builder.get_object("add_black_slide");
-			this.ui_duration = (SpinButton)builder.get_object("duration_time");
-			this.ui_alert = (SpinButton)builder.get_object("alert_time");
-			this.ui_size = (SpinButton)builder.get_object("size_slide");
-			this.ui_file = (FileChooserButton)builder.get_object("pdf_file");
+			this.ui_go = (Gtk.Button)builder.get_object("button_go");
+			this.ui_exit = (Gtk.Button)builder.get_object("button_exit");
+			this.ui_about = (Gtk.Button)builder.get_object("button_about");
+			this.ui_sw_scr = (Gtk.CheckButton)builder.get_object("switch_screens");
+			this.ui_add_black_slide = (Gtk.CheckButton)builder.get_object("add_black_slide");
+			this.ui_duration = (Gtk.SpinButton)builder.get_object("duration_time");
+			this.ui_alert = (Gtk.SpinButton)builder.get_object("alert_time");
+			this.ui_size = (Gtk.SpinButton)builder.get_object("size_slide");
+			this.ui_file = (Gtk.FileChooserButton)builder.get_object("pdf_file");
 			this.ui_file.file_set.connect(this.refresh_status);
 			this.ui_file.selection_changed.connect(this.refresh_status);
-
+			this.ui_go.clicked.connect(this.start_presentation);
+			this.main_w.destroy.connect( (source) => {
+				Gtk.main_quit();
+            } );
+			this.ui_exit.clicked.connect( (source) => {
+				Gtk.main_quit();
+            } );
+			this.ui_about.clicked.connect( (source) => {
+				this.main_w.hide();
+				about_w.show();
+				about_w.run();
+				about_w.hide();
+				this.main_w.show();
+            } );
+			
 			if (pdfFilename!=null) {
 				var fname = File.new_for_path(pdfFilename);
 				this.ui_file.set_file(fname);
@@ -446,50 +508,20 @@ namespace pdfpc {
 				// If the user set the -r option, launch the presentation just now
 				this.do_slide (pdfFilename);
 			} else {
-				bool do_loop=true;
-				do {
-
-					// Set the GUI options acording to the ones currently active
-					this.ui_sw_scr.active=Options.display_switch;
-					this.ui_add_black_slide.active=Options.black_on_end;
-					this.ui_duration.value=Options.duration;
-					this.ui_alert.value=Options.last_minutes;
-					this.ui_size.value=Options.current_size;
+				// Set the GUI options acording to the ones currently active
+				this.ui_sw_scr.active=Options.display_switch;
+				this.ui_add_black_slide.active=Options.black_on_end;
+				this.ui_duration.value=Options.duration;
+				this.ui_alert.value=Options.last_minutes;
+				this.ui_size.value=Options.current_size;
 					
-					main_w.show();
-					this.refresh_status();
-					var result=main_w.run();
-
-					// Update internal options acording to the ones in the GUI
-					Options.display_switch=this.ui_sw_scr.active;
-					Options.black_on_end=this.ui_add_black_slide.active;
-					Options.duration=this.ui_duration.get_value_as_int();
-					Options.last_minutes=this.ui_alert.get_value_as_int();
-					Options.current_size=this.ui_size.get_value_as_int();
-
-					// Remember the last used options
-					this.write_configuration();
-					
-					main_w.hide();
-					switch(result) {
-					case 1:
-						// Launch the presentation
-						this.do_slide (this.ui_file.get_file().get_uri());
-					break;
-					case 2:
-						// Show the ABOUT window
-						about_w.show();
-						about_w.run();
-						about_w.hide();
-						continue;
-					break;
-					default:
-						// Exit, Sasha Kinski :)
-						do_loop=false;
-					break;
-					}
-				} while (do_loop);
+				main_w.show();
+				this.refresh_status();
 			}
+
+			// Enter the Glib eventloop
+            // Everything from this point on is completely signal based
+			Gtk.main();
 			Gdk.threads_leave();
         }
 
