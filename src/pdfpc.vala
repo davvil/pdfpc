@@ -342,8 +342,7 @@ namespace pdfpc {
 					}
 					continue;
 				}
-				if (line.has_prefix("duration ")) {
-					Options.duration=int.parse(line.substring(9).strip());
+				if (line.has_prefix("duration ")) { // old option. Don't use it any more
 					continue;
 				}
 				if (line.has_prefix("last_minutes ")) {
@@ -382,7 +381,7 @@ namespace pdfpc {
 		
 				var home=Environment.get_home_dir();
 
-				var cfg_path=GLib.Path.build_filename(home,".config","pdfpd");
+				var cfg_path=GLib.Path.build_filename(home,".config","pdfpc");
 				GLib.DirUtils.create_with_parents(cfg_path,493); // 493 = 755 in octal (for directory permissions)
 				var config_file = File.new_for_path (GLib.Path.build_filename(cfg_path,"pdfpc.cfg"));
 		
@@ -399,7 +398,6 @@ namespace pdfpc {
 				} else {
 					out_stream.put_string("switch_screens 0\n",null);
 				}
-				out_stream.put_string("duration %u\n".printf(Options.duration));
 				out_stream.put_string("last_minutes %u\n".printf(Options.last_minutes));
 				out_stream.put_string("current_size %u\n".printf(Options.current_size));
 				
@@ -415,7 +413,7 @@ namespace pdfpc {
          */
         public void run( string[] args ) {
 
-            stdout.printf( "pdfpc v3.2 alpha1\n"
+            stdout.printf( "pdfpc v3.1.1\n"
                            + "(C) 2012 David Vilar\n"
                            + "(C) 2009-2011 Jakob Westhoff\n\n" );
 
