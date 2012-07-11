@@ -1,0 +1,17 @@
+[Desktop Entry]
+Encoding=UTF-8
+X-MultipleArgs=false
+Type=Application
+Name=PDFPC
+GenericName=A dual-screen presentation tool
+X-GNOME-FullName=PDFPC, dual-screen presentations
+X-GNOME-FullName[es]=PDFPC, presentaciones a doble pantalla
+X-GNOME-FullName[gl]=PDFPC, presentazóns a dobre pantaia
+Comment=Allows to play PDF files in presentation mode, using dual-screen to show extra information
+Comment[es]=Permite reproducir ficheros PDF en modo presentación, usando doble pantalla para mostrar información extra
+Comment[gl]=Permite reproducir arquivos PDF en modo presentazón, usando dobre pantaia para amosar informazón extra
+TryExec=pdfpc
+Exec=pdfpc %f
+Categories=Graphics;
+Icon=pdfpc
+MimeType=text/pdf;text/x-pdf;application/pdf;application/x-pdf;

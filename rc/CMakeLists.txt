@@ -3,3 +3,9 @@ install(FILES
 DESTINATION
     ${SYSCONFDIR}
 )
+
+install(FILES
+    pdfpc.desktop
+DESTINATION
+    share/applications
+)
