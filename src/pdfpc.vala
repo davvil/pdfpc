@@ -31,11 +31,11 @@ namespace pdfpc {
      */
     public class Application: GLib.Object {
 
-		/**
-		 * This string contains the path where the UI is stored
-		 */
+        /**
+         * This string contains the path where the UI is stored
+         */
 
-		string basepath;
+        string basepath;
 
         /**
          * Window which shows the current slide in fullscreen
@@ -64,20 +64,20 @@ namespace pdfpc {
          */
         private CacheStatus cache_status;
 
-		/**
-		 * Interface elements
-		 */
+        /**
+         * Interface elements
+         */
 
-		private Gtk.Window main_w;
-		private Gtk.Button ui_go;
-		private Gtk.Button ui_exit;
-		private Gtk.Button ui_about;
-		private Gtk.CheckButton ui_sw_scr;
-		private Gtk.CheckButton ui_add_black_slide;
-		private Gtk.SpinButton ui_duration;
-		private Gtk.SpinButton ui_alert;
-		private Gtk.SpinButton ui_size;
-		private Gtk.FileChooserButton ui_file;
+        private Gtk.Window main_w;
+        private Gtk.Button ui_go;
+        private Gtk.Button ui_exit;
+        private Gtk.Button ui_about;
+        private Gtk.CheckButton ui_sw_scr;
+        private Gtk.CheckButton ui_add_black_slide;
+        private Gtk.SpinButton ui_duration;
+        private Gtk.SpinButton ui_alert;
+        private Gtk.SpinButton ui_size;
+        private Gtk.FileChooserButton ui_file;
 
         /**
          * Commandline option parser entry definitions
@@ -90,14 +90,14 @@ namespace pdfpc {
             { "current-size", 'u', 0, OptionArg.INT, ref Options.current_size, "Percentage of the presenter screen to be used for the current slide. (Default 60)", "N" },
             { "overview-min-size", 'o', 0, OptionArg.INT, ref Options.min_overview_width, "Minimum width for the overview miniatures, in pixels. (Default 150)", "N" },
             { "switch-screens", 's', 0, 0, ref Options.display_switch, "Switch the presentation and the presenter screen.", null },
-			{ "no-switch-screens", 'n', 0, 0, ref Options.display_unswitch, "Unswitch the presentation and the presenter screen. It disables a previous -s parameter.", null },
+            { "no-switch-screens", 'n', 0, 0, ref Options.display_unswitch, "Unswitch the presentation and the presenter screen. It disables a previous -s parameter.", null },
             { "disable-cache", 'c', 0, 0, ref Options.disable_caching, "Disable caching and pre-rendering of slides to save memory at the cost of speed.", null },
             { "disable-compression", 'z', 0, 0, ref Options.disable_cache_compression, "Disable the compression of slide images to trade memory consumption for speed. (Avg. factor 30)", null },
             { "black-on-end", 'b', 0, 0, ref Options.black_on_end, "Add an additional black slide at the end of the presentation", null },
             { "single-screen", 'S', 0, 0, ref Options.single_screen, "Force to use only one screen", null },
             { "list-actions", 'L', 0, 0, ref Options.list_actions, "List actions supported in the config file(s)", null},
             { "windowed", 'w', 0, 0, ref Options.windowed, "Run in windowed mode (devel tool)", null},
-			{ "run-now", 'r', 0, 0, ref Options.run_now, "Launch the presentation directly, without showing the user interface", null},
+            { "run-now", 'r', 0, 0, ref Options.run_now, "Launch the presentation directly, without showing the user interface", null},
             { null }
         };
 
@@ -105,7 +105,7 @@ namespace pdfpc {
          * Parse the commandline and apply all found options to there according
          * static class members.
          *
-		 * Returns the name of the pdf file to open (or null if not present)
+         * Returns the name of the pdf file to open (or null if not present)
          */
         protected string? parse_command_line_options( string[] args ) {
             var context = new OptionContext( "<pdf-file>" );
@@ -121,10 +121,10 @@ namespace pdfpc {
                 Posix.exit( 1 );
             }
             if ( args.length < 2 ) {
-				return null;
+                return null;
             } else {
-				return args[1];
-			}
+                return args[1];
+            }
         }
 
         /**
@@ -151,70 +151,70 @@ namespace pdfpc {
             return presentation_window;
         }
 
-		/**
-		 * This callback kills the current presentation and shows the main window
-		 */
+        /**
+         * This callback kills the current presentation and shows the main window
+         */
 
-		public void kill_presentation() {
+        public void kill_presentation() {
 
-			this.controller.signal_close_presentation.disconnect(this.kill_presentation);
-			if (this.presentation_window!=null) {
-				this.presentation_window.destroy();
-				this.presentation_window=null;
-			}
-			if (this.presenter_window!=null) {
-				this.presenter_window.destroy();
-				this.presenter_window=null;
-			}
-			// controller and cache status should have a destructor method, to ensure
-			// that all the memory is freed here (I'm not sure, but seems to be a little
-			// memory leak when launching a presentation over and over again)
-			this.controller=null;
-			this.cache_status=null;
+            this.controller.signal_close_presentation.disconnect(this.kill_presentation);
+            if (this.presentation_window!=null) {
+                this.presentation_window.destroy();
+                this.presentation_window=null;
+            }
+            if (this.presenter_window!=null) {
+                this.presenter_window.destroy();
+                this.presenter_window=null;
+            }
+            // controller and cache status should have a destructor method, to ensure
+            // that all the memory is freed here (I'm not sure, but seems to be a little
+            // memory leak when launching a presentation over and over again)
+            this.controller=null;
+            this.cache_status=null;
 
-			if (Options.run_now) {
-				// If we are running the presentation directly, now we have to exit
-				Gtk.main_quit();
-			} else {
-				// If not, we have to show the main window
-				this.main_w.show();
-			}
-		}
+            if (Options.run_now) {
+                // If we are running the presentation directly, now we have to exit
+                Gtk.main_quit();
+            } else {
+                // If not, we have to show the main window
+                this.main_w.show();
+            }
+        }
 
 
-		/**
-		 * This callback starts a presentation from the main window
-		 */
-		
-		public void start_presentation() {
+        /**
+         * This callback starts a presentation from the main window
+         */
+        
+        public void start_presentation() {
 
-			this.main_w.hide();
+            this.main_w.hide();
 
-			// Update internal options acording to the ones in the GUI
-			Options.display_switch=this.ui_sw_scr.active;
-			Options.black_on_end=this.ui_add_black_slide.active;
-			Options.duration=this.ui_duration.get_value_as_int();
-			Options.last_minutes=this.ui_alert.get_value_as_int();
-			Options.current_size=this.ui_size.get_value_as_int();
+            // Update internal options acording to the ones in the GUI
+            Options.display_switch=this.ui_sw_scr.active;
+            Options.black_on_end=this.ui_add_black_slide.active;
+            Options.duration=this.ui_duration.get_value_as_int();
+            Options.last_minutes=this.ui_alert.get_value_as_int();
+            Options.current_size=this.ui_size.get_value_as_int();
 
-			// Remember the last used options
-			this.write_configuration();
+            // Remember the last used options
+            this.write_configuration();
 
-			// And launch the presentation
-			this.do_slide (this.ui_file.get_file().get_uri());
-			
-		}
-		
+            // And launch the presentation
+            this.do_slide (this.ui_file.get_file().get_uri());
+            
+        }
+        
         /**
          * Main application function, which instantiates the windows and
          * initializes the Gtk system.
          */
+
         public void do_slide( string pdfFilename ) {
-			
-			if (pdfFilename == null) {
-				stderr.printf( "Error: No pdf file given\n");
-				Posix.exit(1);
-			}
+            if (pdfFilename == null) {
+                stderr.printf( "Error: No pdf file given\n");
+                Posix.exit(1);
+            }
 
             stdout.printf( "Initializing rendering...\n" );
 
@@ -226,7 +226,7 @@ namespace pdfpc {
             // crosscutting concerns between the different windows.
             this.controller = new PresentationController( metadata, Options.black_on_end );
             this.cache_status = new CacheStatus();
-			this.controller.signal_close_presentation.connect(this.kill_presentation);
+            this.controller.signal_close_presentation.connect(this.kill_presentation);
 
             ConfigFileReader configFileReader = new ConfigFileReader(this.controller);
             configFileReader.readConfig(GLib.Path.build_filename(etc_path, "pdfpcrc"));
@@ -272,141 +272,141 @@ namespace pdfpc {
             }
         }
 
-		public void refresh_status() {
+        public void refresh_status() {
 
-			var fname = this.ui_file.get_file();
-			if (fname!=null) {
-				var uri = fname.get_uri();
-				if (uri==null) {
-					this.ui_go.sensitive=false;
-				} else {
-					this.ui_go.sensitive=true;
-				}
-			}else {
-				this.ui_go.sensitive=false;
-			}
-		}
+            var fname = this.ui_file.get_file();
+            if (fname!=null) {
+                var uri = fname.get_uri();
+                if (uri==null) {
+                    this.ui_go.sensitive=false;
+                } else {
+                    this.ui_go.sensitive=true;
+                }
+            }else {
+                this.ui_go.sensitive=false;
+            }
+        }
 
-		private int read_configuration() {
-			
-			/****************************************************************************************
-			 * This function will read the configuration from the file ~/.pdf_presenter.cfg         *
-			 * If not, it will use that file to get the configuration                               *
-			 * Returns:                                                                             *
-			 *   0: on success                                                                      *
-			 *  -1: the config file doesn't exists                                                  *
-			 *  -2: can't read the config file                                                      *
-			 *  +N: parse error at line N in config file                                            *			 
-			 ****************************************************************************************/
+        private int read_configuration() {
+            
+            /****************************************************************************************
+             * This function will read the configuration from the file ~/.pdf_presenter.cfg         *
+             * If not, it will use that file to get the configuration                               *
+             * Returns:                                                                             *
+             *   0: on success                                                                      *
+             *  -1: the config file doesn't exists                                                  *
+             *  -2: can't read the config file                                                      *
+             *  +N: parse error at line N in config file                                            *             
+             ****************************************************************************************/
 
-			bool failed=false;
-			FileInputStream file_read;
-			
-			string home=Environment.get_home_dir();
-			var config_file = File.new_for_path (GLib.Path.build_filename(home,".config","pdfpd","pdfpc.cfg"));
-			
-			if (!config_file.query_exists(null)) {
-				return -1;
-			}
+            bool failed=false;
+            FileInputStream file_read;
+            
+            string home=Environment.get_home_dir();
+            var config_file = File.new_for_path (GLib.Path.build_filename(home,".config","pdfpc","pdfpc.cfg"));
+            
+            if (!config_file.query_exists(null)) {
+                return -1;
+            }
 
-			try {
-				file_read=config_file.read(null);
-			} catch {
-				return -2;
-			}
-			var in_stream = new DataInputStream (file_read);
-			string line;
-			int line_counter=0;
+            try {
+                file_read=config_file.read(null);
+            } catch {
+                return -2;
+            }
+            var in_stream = new DataInputStream (file_read);
+            string line;
+            int line_counter=0;
 
-			while ((line = in_stream.read_line (null, null)) != null) {
-				line_counter++;
-				
-				// ignore comments
-				if (line[0]=='#') {
-					continue;
-				}
-				
-				// remove unwanted blank spaces
-				line.strip();
+            while ((line = in_stream.read_line (null, null)) != null) {
+                line_counter++;
+                
+                // ignore comments
+                if (line[0]=='#') {
+                    continue;
+                }
+                
+                // remove unwanted blank spaces
+                line.strip();
 
-				// ignore empty lines				
-				if (line.length==0) {
-					continue;
-				}
-				
-				if (line.has_prefix("switch_screens ")) {
-					if (line.substring(15)=="1") {
-						Options.display_switch=true;
-					} else {
-						Options.display_switch=false;
-					}
-					continue;
-				}
-				if (line.has_prefix("duration ")) { // old option. Don't use it any more
-					continue;
-				}
-				if (line.has_prefix("last_minutes ")) {
-					Options.last_minutes=int.parse(line.substring(13).strip());
-					continue;
-				}
-				if (line.has_prefix("current_size ")) {
-					Options.current_size=int.parse(line.substring(13).strip());
-					continue;
-				}
-				failed=true;
-				break;
-			}
+                // ignore empty lines                
+                if (line.length==0) {
+                    continue;
+                }
+                
+                if (line.has_prefix("switch_screens ")) {
+                    if (line.substring(15)=="1") {
+                        Options.display_switch=true;
+                    } else {
+                        Options.display_switch=false;
+                    }
+                    continue;
+                }
+                if (line.has_prefix("duration ")) { // old option. Don't use it any more
+                    continue;
+                }
+                if (line.has_prefix("last_minutes ")) {
+                    Options.last_minutes=int.parse(line.substring(13).strip());
+                    continue;
+                }
+                if (line.has_prefix("current_size ")) {
+                    Options.current_size=int.parse(line.substring(13).strip());
+                    continue;
+                }
+                failed=true;
+                break;
+            }
 
-			try {
-				in_stream.close(null);
-			} catch {
-			}
-			try {
-				file_read.close(null);
-			} catch {
-			}
+            try {
+                in_stream.close(null);
+            } catch {
+            }
+            try {
+                file_read.close(null);
+            } catch {
+            }
 
-			if (failed) {
-				GLib.stderr.printf(_("Invalid parameter in config file %s (line %d)\n"),config_file.get_path(),line_counter);
-				return line_counter;
-			}
-			
-			return 0;
-		}
+            if (failed) {
+                GLib.stderr.printf(_("Invalid parameter in config file %s (line %d)\n"),config_file.get_path(),line_counter);
+                return line_counter;
+            }
+            
+            return 0;
+        }
 
-		public int write_configuration() {
+        public int write_configuration() {
 
-			try {
-				FileOutputStream file_write;
-		
-				var home=Environment.get_home_dir();
+            try {
+                FileOutputStream file_write;
+        
+                var home=Environment.get_home_dir();
 
-				var cfg_path=GLib.Path.build_filename(home,".config","pdfpc");
-				GLib.DirUtils.create_with_parents(cfg_path,493); // 493 = 755 in octal (for directory permissions)
-				var config_file = File.new_for_path (GLib.Path.build_filename(cfg_path,"pdfpc.cfg"));
-		
-				try {
-					file_write=config_file.replace(null,false,0,null);
-				} catch {
-					return -2;
-				}
-		
-				var out_stream = new DataOutputStream (file_write);
-			
-				if (Options.display_switch) {
-					out_stream.put_string("switch_screens 1\n",null);
-				} else {
-					out_stream.put_string("switch_screens 0\n",null);
-				}
-				out_stream.put_string("last_minutes %u\n".printf(Options.last_minutes));
-				out_stream.put_string("current_size %u\n".printf(Options.current_size));
-				
-			} catch (IOError e) {
-			}		
-			return 0;
-		}
+                var cfg_path=GLib.Path.build_filename(home,".config","pdfpc");
+                GLib.DirUtils.create_with_parents(cfg_path,493); // 493 = 755 in octal (for directory permissions)
+                var config_file = File.new_for_path (GLib.Path.build_filename(cfg_path,"pdfpc.cfg"));
+        
+                try {
+                    file_write=config_file.replace(null,false,0,null);
+                } catch {
+                    return -2;
+                }
+        
+                var out_stream = new DataOutputStream (file_write);
+            
+                if (Options.display_switch) {
+                    out_stream.put_string("switch_screens 1\n",null);
+                } else {
+                    out_stream.put_string("switch_screens 0\n",null);
+                }
+                out_stream.put_string("last_minutes %u\n".printf(Options.last_minutes));
+                out_stream.put_string("current_size %u\n".printf(Options.current_size));
+                
+            } catch (IOError e) {
+            }        
+            return 0;
+        }
 
-		
+        
         /**
          * Main application function, which instantiates the windows and
          * initializes the Gtk system.
@@ -420,107 +420,107 @@ namespace pdfpc {
             Gdk.threads_init();
             Gtk.init( ref args );
 
-			// First, read the configuration with the last options used (to remember if we
-			// have to switch screens and so on)
-			this.read_configuration ();
+            // First, read the configuration with the last options used (to remember if we
+            // have to switch screens and so on)
+            this.read_configuration ();
 
-			// Now, read the command line options, overwriting the ones set by the
-			// READ_CONFIGURATION function
+            // Now, read the command line options, overwriting the ones set by the
+            // READ_CONFIGURATION function
             string pdfFilename = this.parse_command_line_options( args );
             if (Options.list_actions) {
-				stdout.printf("Config file commands accepted by pdfpc:\n");
-				string[] actions = PresentationController.getActionDescriptions();
-				for (int i = 0; i < actions.length; i+=2) {
-					string tabAlignment = "\t";
-					if (actions[i].length < 8)
-						tabAlignment += "\t";
-					stdout.printf("\t%s%s=> %s\n", actions[i], tabAlignment, actions[i+1]);
-				}
+                stdout.printf("Config file commands accepted by pdfpc:\n");
+                string[] actions = PresentationController.getActionDescriptions();
+                for (int i = 0; i < actions.length; i+=2) {
+                    string tabAlignment = "\t";
+                    if (actions[i].length < 8)
+                        tabAlignment += "\t";
+                    stdout.printf("\t%s%s=> %s\n", actions[i], tabAlignment, actions[i+1]);
+                }
                 return;
             }
 
-			// This option is needed because the previously stored configuration could mandate
-			// to switch the screens, but now the user doesn't want to do it from command line
-			if (Options.display_unswitch) {
-				Options.display_switch=false;
-			}
-			
-			// Find where the GUI definition files are (/usr or /usr/local) and set locale
-			var file=File.new_for_path("/usr/share/pdfpc/main.ui");
-			if (file.query_exists()) {
-				this.basepath="/usr/share/pdfpc/";
-				Intl.bindtextdomain( "pdfpc", "/usr/share/locale");
-			} else {
-				this.basepath="/usr/local/share/pdfpc/";
-				Intl.bindtextdomain( "pdfpc", "/usr/local/share/locale");
-			}
-			Intl.textdomain("pdfpc");
-			Intl.bind_textdomain_codeset( "pdfpc", "UTF-8" );
+            // This option is needed because the previously stored configuration could mandate
+            // to switch the screens, but now the user doesn't want to do it from command line
+            if (Options.display_unswitch) {
+                Options.display_switch=false;
+            }
+            
+            // Find where the GUI definition files are (/usr or /usr/local) and set locale
+            var file=File.new_for_path("/usr/share/pdfpc/main.ui");
+            if (file.query_exists()) {
+                this.basepath="/usr/share/pdfpc/";
+                Intl.bindtextdomain( "pdfpc", "/usr/share/locale");
+            } else {
+                this.basepath="/usr/local/share/pdfpc/";
+                Intl.bindtextdomain( "pdfpc", "/usr/local/share/locale");
+            }
+            Intl.textdomain("pdfpc");
+            Intl.bind_textdomain_codeset( "pdfpc", "UTF-8" );
 
             // Initialize the application wide mutex objects
             MutexLocks.init();
 
-			var builder = new Builder();
-			builder.add_from_file(GLib.Path.build_filename(this.basepath,"main.ui"));
-			this.main_w = (Gtk.Window)builder.get_object("main_window");
+            var builder = new Builder();
+            builder.add_from_file(GLib.Path.build_filename(this.basepath,"main.ui"));
+            this.main_w = (Gtk.Window)builder.get_object("main_window");
 
-			var builder2 = new Builder();		
-			builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
-			var about_w = (Gtk.Dialog)builder2.get_object("aboutdialog");
+            var builder2 = new Builder();        
+            builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
+            var about_w = (Gtk.Dialog)builder2.get_object("aboutdialog");
 
-			// Get access to all the important widgets in the GUI 
-			this.ui_go = (Gtk.Button)builder.get_object("button_go");
-			this.ui_exit = (Gtk.Button)builder.get_object("button_exit");
-			this.ui_about = (Gtk.Button)builder.get_object("button_about");
-			this.ui_sw_scr = (Gtk.CheckButton)builder.get_object("switch_screens");
-			this.ui_add_black_slide = (Gtk.CheckButton)builder.get_object("add_black_slide");
-			this.ui_duration = (Gtk.SpinButton)builder.get_object("duration_time");
-			this.ui_alert = (Gtk.SpinButton)builder.get_object("alert_time");
-			this.ui_size = (Gtk.SpinButton)builder.get_object("size_slide");
-			this.ui_file = (Gtk.FileChooserButton)builder.get_object("pdf_file");
-			this.ui_file.file_set.connect(this.refresh_status);
-			this.ui_file.selection_changed.connect(this.refresh_status);
-			this.ui_go.clicked.connect(this.start_presentation);
-			this.main_w.destroy.connect( (source) => {
-				Gtk.main_quit();
+            // Get access to all the important widgets in the GUI 
+            this.ui_go = (Gtk.Button)builder.get_object("button_go");
+            this.ui_exit = (Gtk.Button)builder.get_object("button_exit");
+            this.ui_about = (Gtk.Button)builder.get_object("button_about");
+            this.ui_sw_scr = (Gtk.CheckButton)builder.get_object("switch_screens");
+            this.ui_add_black_slide = (Gtk.CheckButton)builder.get_object("add_black_slide");
+            this.ui_duration = (Gtk.SpinButton)builder.get_object("duration_time");
+            this.ui_alert = (Gtk.SpinButton)builder.get_object("alert_time");
+            this.ui_size = (Gtk.SpinButton)builder.get_object("size_slide");
+            this.ui_file = (Gtk.FileChooserButton)builder.get_object("pdf_file");
+            this.ui_file.file_set.connect(this.refresh_status);
+            this.ui_file.selection_changed.connect(this.refresh_status);
+            this.ui_go.clicked.connect(this.start_presentation);
+            this.main_w.destroy.connect( (source) => {
+                Gtk.main_quit();
             } );
-			this.ui_exit.clicked.connect( (source) => {
-				Gtk.main_quit();
+            this.ui_exit.clicked.connect( (source) => {
+                Gtk.main_quit();
             } );
-			this.ui_about.clicked.connect( (source) => {
-				this.main_w.hide();
-				about_w.show();
-				about_w.run();
-				about_w.hide();
-				this.main_w.show();
+            this.ui_about.clicked.connect( (source) => {
+                this.main_w.hide();
+                about_w.show();
+                about_w.run();
+                about_w.hide();
+                this.main_w.show();
             } );
-			
-			if (pdfFilename!=null) {
-				var fname = File.new_for_path(pdfFilename);
-				this.ui_file.set_file(fname);
-			}
-			
-			Gdk.threads_enter();
+            
+            if (pdfFilename!=null) {
+                var fname = File.new_for_path(pdfFilename);
+                this.ui_file.set_file(fname);
+            }
+            
+            Gdk.threads_enter();
 
-			if (Options.run_now) {
-				// If the user set the -r option, launch the presentation just now
-				this.do_slide (pdfFilename);
-			} else {
-				// Set the GUI options acording to the ones currently active
-				this.ui_sw_scr.active=Options.display_switch;
-				this.ui_add_black_slide.active=Options.black_on_end;
-				this.ui_duration.value=Options.duration;
-				this.ui_alert.value=Options.last_minutes;
-				this.ui_size.value=Options.current_size;
-					
-				main_w.show();
-				this.refresh_status();
-			}
+            if (Options.run_now) {
+                // If the user set the -r option, launch the presentation just now
+                this.do_slide (pdfFilename);
+            } else {
+                // Set the GUI options acording to the ones currently active
+                this.ui_sw_scr.active=Options.display_switch;
+                this.ui_add_black_slide.active=Options.black_on_end;
+                this.ui_duration.value=Options.duration;
+                this.ui_alert.value=Options.last_minutes;
+                this.ui_size.value=Options.current_size;
+                    
+                main_w.show();
+                this.refresh_status();
+            }
 
-			// Enter the Glib eventloop
+            // Enter the Glib eventloop
             // Everything from this point on is completely signal based
-			Gtk.main();
-			Gdk.threads_leave();
+            Gtk.main();
+            Gdk.threads_leave();
         }
 
         /**
