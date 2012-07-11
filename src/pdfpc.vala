@@ -413,7 +413,7 @@ namespace pdfpc {
          */
         public void run( string[] args ) {
 
-            stdout.printf( "pdfpc v3.1.1\n"
+            stdout.printf( "pdfpc v3.2 beta2\n"
                            + "(C) 2012 David Vilar\n"
                            + "(C) 2009-2011 Jakob Westhoff\n\n" );
 
