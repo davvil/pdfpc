@@ -87,7 +87,8 @@ add_library(pdf_presenter_console_test_library
 
 install(FILES
         ui/main.ui
-        ui/about.ui
+	ui/about.ui
+	ui/settings.ui
 DESTINATION
         share/pdfpc
 )

@@ -72,12 +72,14 @@ namespace pdfpc {
         private Gtk.Button ui_go;
         private Gtk.Button ui_exit;
         private Gtk.Button ui_about;
-        private Gtk.CheckButton ui_sw_scr;
+		private Gtk.Button ui_settings;
         private Gtk.CheckButton ui_add_black_slide;
         private Gtk.SpinButton ui_duration;
         private Gtk.SpinButton ui_alert;
-        private Gtk.SpinButton ui_size;
         private Gtk.FileChooserButton ui_file;
+		private Gtk.SpinButton ui_end_hour;
+		private Gtk.SpinButton ui_end_minute;
+		private Gtk.RadioButton ui_use_duration;
 
         /**
          * Commandline option parser entry definitions
@@ -191,14 +193,15 @@ namespace pdfpc {
             this.main_w.hide();
 
             // Update internal options acording to the ones in the GUI
-            Options.display_switch=this.ui_sw_scr.active;
-            Options.black_on_end=this.ui_add_black_slide.active;
-            Options.duration=this.ui_duration.get_value_as_int();
-            Options.last_minutes=this.ui_alert.get_value_as_int();
-            Options.current_size=this.ui_size.get_value_as_int();
-
-            // Remember the last used options
-            this.write_configuration();
+            Options.black_on_end = this.ui_add_black_slide.active;
+			Options.last_minutes = this.ui_alert.get_value_as_int();
+			if (this.ui_use_duration.active) {
+	            Options.duration = this.ui_duration.get_value_as_int();
+				Options.end_time = null;
+			} else {
+				Options.duration = 987654321u;
+				Options.end_time = "%d:%d".printf(this.ui_end_hour.get_value_as_int(),this.ui_end_minute.get_value_as_int());
+			}
 
             // And launch the presentation
             this.do_slide (this.ui_file.get_file().get_uri());
@@ -285,6 +288,16 @@ namespace pdfpc {
             }else {
                 this.ui_go.sensitive=false;
             }
+
+			if (this.ui_use_duration.active) {
+				this.ui_duration.sensitive=true;
+				this.ui_end_hour.sensitive=false;
+				this.ui_end_minute.sensitive=false;
+			} else {
+				this.ui_duration.sensitive=false;
+				this.ui_end_hour.sensitive=true;
+				this.ui_end_minute.sensitive=true;
+			}
         }
 
         private int read_configuration() {
@@ -464,37 +477,65 @@ namespace pdfpc {
             builder.add_from_file(GLib.Path.build_filename(this.basepath,"main.ui"));
             this.main_w = (Gtk.Window)builder.get_object("main_window");
 
-            var builder2 = new Builder();        
-            builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
-            var about_w = (Gtk.Dialog)builder2.get_object("aboutdialog");
-
             // Get access to all the important widgets in the GUI 
             this.ui_go = (Gtk.Button)builder.get_object("button_go");
             this.ui_exit = (Gtk.Button)builder.get_object("button_exit");
             this.ui_about = (Gtk.Button)builder.get_object("button_about");
-            this.ui_sw_scr = (Gtk.CheckButton)builder.get_object("switch_screens");
+			this.ui_settings = (Gtk.Button)builder.get_object("button_settings");
             this.ui_add_black_slide = (Gtk.CheckButton)builder.get_object("add_black_slide");
             this.ui_duration = (Gtk.SpinButton)builder.get_object("duration_time");
             this.ui_alert = (Gtk.SpinButton)builder.get_object("alert_time");
-            this.ui_size = (Gtk.SpinButton)builder.get_object("size_slide");
             this.ui_file = (Gtk.FileChooserButton)builder.get_object("pdf_file");
+			this.ui_end_hour = (Gtk.SpinButton)builder.get_object("end_hour_time");
+			this.ui_end_minute = (Gtk.SpinButton)builder.get_object("end_minute_time");
+			this.ui_use_duration = (Gtk.RadioButton)builder.get_object("use_duration_time");
+			
             this.ui_file.file_set.connect(this.refresh_status);
             this.ui_file.selection_changed.connect(this.refresh_status);
             this.ui_go.clicked.connect(this.start_presentation);
+			this.ui_use_duration.toggled.connect(this.refresh_status);
+			
             this.main_w.destroy.connect( (source) => {
                 Gtk.main_quit();
             } );
             this.ui_exit.clicked.connect( (source) => {
                 Gtk.main_quit();
             } );
+
             this.ui_about.clicked.connect( (source) => {
-                this.main_w.hide();
-                about_w.show();
+
+				var builder2 = new Builder();        
+                builder2.add_from_file(GLib.Path.build_filename(this.basepath,"about.ui"));
+                var about_w = (Gtk.Dialog)builder2.get_object("aboutdialog");
+
+				about_w.show();
                 about_w.run();
                 about_w.hide();
-                this.main_w.show();
+				about_w.destroy();
             } );
-            
+
+			this.ui_settings.clicked.connect( (source) => {
+
+				var builder3 = new Builder();        
+                builder3.add_from_file(GLib.Path.build_filename(this.basepath,"settings.ui"));
+                var settings_w = (Gtk.Dialog)builder3.get_object("settings_dialog");
+
+				var ui_sw_scr = (Gtk.CheckButton)builder3.get_object("switch_screens");
+				var ui_size = (Gtk.SpinButton)builder3.get_object("size_slide");
+
+				ui_sw_scr.active=Options.display_switch;
+                ui_size.value=Options.current_size;
+				
+				settings_w.show();
+                if (settings_w.run()>0) {
+					Options.display_switch=ui_sw_scr.active;
+					Options.current_size=ui_size.get_value_as_int();
+					this.write_configuration ();
+				}
+                settings_w.hide();
+				settings_w.destroy();
+            } );
+			
             if (pdfFilename!=null) {
                 var fname = File.new_for_path(pdfFilename);
                 this.ui_file.set_file(fname);
@@ -507,12 +548,9 @@ namespace pdfpc {
                 this.do_slide (pdfFilename);
             } else {
                 // Set the GUI options acording to the ones currently active
-                this.ui_sw_scr.active=Options.display_switch;
                 this.ui_add_black_slide.active=Options.black_on_end;
                 this.ui_duration.value=Options.duration;
                 this.ui_alert.value=Options.last_minutes;
-                this.ui_size.value=Options.current_size;
-                    
                 main_w.show();
                 this.refresh_status();
             }
