@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-06 23:44+0200\n"
+"POT-Creation-Date: 2012-07-14 01:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/pdfpc.vala:319
+#: ../src/pdfpc.vala:383
 #, c-format
 msgid "Invalid parameter in config file %s (line %d)\n"
 msgstr ""
@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 
 #: ../src/ui/main.ui.h:1
-msgid "PDF PC"
+msgid "PDF Presentation Console"
 msgstr ""
 
 #: ../src/ui/main.ui.h:2
@@ -37,25 +37,33 @@ msgid "Presentation file: "
 msgstr ""
 
 #: ../src/ui/main.ui.h:3
-msgid "Duration (in minutes): "
-msgstr ""
-
-#: ../src/ui/main.ui.h:4
 msgid "Alert time (in minutes):"
 msgstr ""
 
+#: ../src/ui/main.ui.h:4
+msgid "Duration (in minutes): "
+msgstr ""
+
 #: ../src/ui/main.ui.h:5
-msgid "Add additional slide in black at the end"
+msgid "End time:"
 msgstr ""
 
 #: ../src/ui/main.ui.h:6
-msgid "Switch screens"
+msgid ":"
 msgstr ""
 
 #: ../src/ui/main.ui.h:7
-msgid "Size for current slide (percentage):"
+msgid "Add additional slide in black at the end"
 msgstr ""
 
-#: ../src/ui/main.ui.h:8
-msgid "Advanced options"
+#: ../src/ui/settings.ui.h:1
+msgid "Settings"
+msgstr ""
+
+#: ../src/ui/settings.ui.h:2
+msgid "Switch screens"
+msgstr ""
+
+#: ../src/ui/settings.ui.h:3
+msgid "Size for current slide (percentage):"
 msgstr ""

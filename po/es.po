@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 2.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-06 23:44+0200\n"
-"PO-Revision-Date: 2012-07-06 23:45+0200\n"
+"POT-Creation-Date: 2012-07-14 01:37+0200\n"
+"PO-Revision-Date: 2012-07-14 01:37+0200\n"
 "Last-Translator: Sergio Costas <raster@rastersoft.com>\n"
 "Language-Team: Español; Castellano <raster@rastersoft.com>\n"
 "Language: spanish\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bits\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: ../src/pdfpc.vala:319
+#: ../src/pdfpc.vala:383
 #, c-format
 msgid "Invalid parameter in config file %s (line %d)\n"
 msgstr "Parámetro no válido en el fichero de configuración %s (línea %d)\n"
@@ -31,33 +31,47 @@ msgstr ""
 "2012 David Vilar Torres"
 
 #: ../src/ui/main.ui.h:1
-msgid "PDF PC"
-msgstr "PDF PC"
+msgid "PDF Presentation Console"
+msgstr "PDF Presentation Console"
 
 #: ../src/ui/main.ui.h:2
 msgid "Presentation file: "
 msgstr "Presentación:"
 
 #: ../src/ui/main.ui.h:3
-msgid "Duration (in minutes): "
-msgstr "Duración (en minutos):"
-
-#: ../src/ui/main.ui.h:4
 msgid "Alert time (in minutes):"
 msgstr "Instante de alerta (en minutos):"
 
+#: ../src/ui/main.ui.h:4
+msgid "Duration (in minutes): "
+msgstr "Duración (en minutos):"
+
 #: ../src/ui/main.ui.h:5
+msgid "End time:"
+msgstr "Hora de fin:"
+
+#: ../src/ui/main.ui.h:6
+msgid ":"
+msgstr ":"
+
+#: ../src/ui/main.ui.h:7
 msgid "Add additional slide in black at the end"
 msgstr "Añadir al final una diapositiva en negro"
 
-#: ../src/ui/main.ui.h:6
+#: ../src/ui/settings.ui.h:1
+msgid "Settings"
+msgstr "Preferencias"
+
+#: ../src/ui/settings.ui.h:2
 msgid "Switch screens"
 msgstr "Intercambiar pantallas"
 
-#: ../src/ui/main.ui.h:7
+#: ../src/ui/settings.ui.h:3
 msgid "Size for current slide (percentage):"
 msgstr "Tamaño para diapositiva actual (porcentaje):"
 
-#: ../src/ui/main.ui.h:8
-msgid "Advanced options"
-msgstr "Opciones avanzadas"
+#~ msgid "PDF PC"
+#~ msgstr "PDF PC"
+
+#~ msgid "Advanced options"
+#~ msgstr "Opciones avanzadas"
