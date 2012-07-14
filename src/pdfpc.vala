@@ -540,6 +540,11 @@ namespace pdfpc {
 			filter.add_mime_type("application/pdf");
 			filter.add_mime_type("application/x-pdf");
 			this.ui_file.add_filter(filter);
+
+			var filter2 = new FileFilter();
+			filter2.set_name(_("All"));
+			filter2.add_pattern("*");
+			this.ui_file.add_filter(filter2);
 			
             this.ui_file.file_set.connect(this.refresh_file);
             this.ui_file.selection_changed.connect(this.refresh_file);
