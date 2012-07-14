@@ -158,6 +158,9 @@ namespace pdfpc {
                         case "switch-screens":
                             Options.display_switch = !Options.display_switch;
                             break;
+						case "no-gui":
+							Options.run_now = !Options.run_now;
+							break;
                         default:
                             stderr.printf("Warning: Unknown command line \"%s\"\n", uncommentedLine);
                             break;
