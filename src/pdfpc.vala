@@ -300,6 +300,49 @@ namespace pdfpc {
 			}
         }
 
+		public void refresh_file() {
+
+			var fname=this.ui_file.get_file();
+			string pdf_basefname = fname.get_basename();
+        	int extension_index = pdf_basefname.last_index_of(".");
+        	string pdfpc_basefname = pdf_basefname[0:extension_index] + ".pdfpc";
+        	var pdfpc_file = fname.get_parent().get_child(pdfpc_basefname);
+
+			File file;
+			uint8[] raw_datau8;
+			
+			try {
+	        	file = File.new_for_uri(pdfpc_file.get_uri());
+				file.load_contents(null, out raw_datau8, null);
+				GLib.stdout.printf("Found metadata file\n");
+			} catch {
+				GLib.stdout.printf("No metadata file found\n");
+				return;
+			}
+			
+        	string[] lines = ((string) raw_datau8).split("\n");
+			bool found=false;
+			
+			for (int i=0; i < lines.length; ++i) {
+				string l = lines[i].strip();
+				if (found) {
+					GLib.stdout.printf("Found duration in metadata\n");
+					Options.duration = int.parse(l);
+					break;
+				} else {
+					if (l == "[duration]") {
+						found=true;
+					}
+				}
+			}
+			
+			if (found) {
+				this.ui_duration.value=Options.duration;
+				this.ui_use_duration.set_active(true);
+			}
+			this.refresh_status ();
+		}
+		
         private int read_configuration() {
             
             /****************************************************************************************
@@ -489,9 +532,17 @@ namespace pdfpc {
 			this.ui_end_hour = (Gtk.SpinButton)builder.get_object("end_hour_time");
 			this.ui_end_minute = (Gtk.SpinButton)builder.get_object("end_minute_time");
 			this.ui_use_duration = (Gtk.RadioButton)builder.get_object("use_duration_time");
+
+			var filter = new FileFilter();
+			filter.set_name("PDF");
+			filter.add_mime_type("text/pdf");
+			filter.add_mime_type("text/x-pdf");
+			filter.add_mime_type("application/pdf");
+			filter.add_mime_type("application/x-pdf");
+			this.ui_file.add_filter(filter);
 			
-            this.ui_file.file_set.connect(this.refresh_status);
-            this.ui_file.selection_changed.connect(this.refresh_status);
+            this.ui_file.file_set.connect(this.refresh_file);
+            this.ui_file.selection_changed.connect(this.refresh_file);
             this.ui_go.clicked.connect(this.start_presentation);
 			this.ui_use_duration.toggled.connect(this.refresh_status);
 			
@@ -536,13 +587,14 @@ namespace pdfpc {
 				settings_w.destroy();
             } );
 			
-            if (pdfFilename!=null) {
-                var fname = File.new_for_path(pdfFilename);
-                this.ui_file.set_file(fname);
-            }
             
             Gdk.threads_enter();
 
+			if (pdfFilename!=null) {
+                var fname = File.new_for_path(pdfFilename);
+                this.ui_file.set_file(fname);
+            }
+			
             if (Options.run_now) {
                 // If the user set the -r option, launch the presentation just now
                 this.do_slide (pdfFilename);
