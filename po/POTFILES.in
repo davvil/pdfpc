@@ -1,4 +1,5 @@
 src/pdfpc.vala
+src/classes/timer_label.vala
 [type: gettext/glade]src/ui/about.ui
 [type: gettext/glade]src/ui/main.ui
 [type: gettext/glade]src/ui/settings.ui

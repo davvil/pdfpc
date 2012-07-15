@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 2.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-07-15 00:30+0200\n"
-"PO-Revision-Date: 2012-07-15 00:30+0200\n"
+"POT-Creation-Date: 2012-07-15 13:54+0200\n"
+"PO-Revision-Date: 2012-07-15 13:54+0200\n"
 "Last-Translator: Sergio Costas <raster@rastersoft.com>\n"
 "Language-Team: Español; Castellano <raster@rastersoft.com>\n"
 "Language: spanish\n"
@@ -17,14 +17,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bits\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
 
-#: ../src/pdfpc.vala:426
+#: ../src/pdfpc.vala:427
 #, c-format
 msgid "Invalid parameter in config file %s (line %d)\n"
 msgstr "Parámetro no válido en el fichero de configuración %s (línea %d)\n"
 
-#: ../src/pdfpc.vala:545
+#: ../src/pdfpc.vala:546
 msgid "All"
 msgstr "Todos"
+
+#: ../src/classes/timer_label.vala:317 ../src/classes/timer_label.vala:323
+msgid "Until %H:%M"
+msgstr "Hasta las %H:%M"
 
 #: ../src/ui/about.ui.h:1
 msgid ""

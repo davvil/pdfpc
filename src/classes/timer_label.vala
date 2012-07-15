@@ -314,13 +314,13 @@ namespace pdfpc {
 
         public override void stop() {
             base.stop();
-            this.set_text(this.end_time_object.format("Until %H:%M"));
+            this.set_text(this.end_time_object.format(_("Until %H:%M")));
         }
 
         public override void reset() {
             base.reset();
             if ( this.timeout == 0 )
-                this.set_text(this.end_time_object.format("Until %H:%M"));
+                this.set_text(this.end_time_object.format(_("Until %H:%M")));
         }
 
         public override bool on_timeout() {
