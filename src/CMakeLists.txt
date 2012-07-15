@@ -16,7 +16,9 @@ set(CFLAGS
 	${GTHREAD_CFLAGS} ${GTHREAD_CFLAGS_OTHER}
         ${RSVG_CFLAGS} ${RSVG_CFLAGS_OTHER}
 )
+
 add_definitions(${CFLAGS})
+add_definitions( -D'GETTEXT_PACKAGE="pdfpc"' )
 
 set(LIBS
 	${GOBJECT_LIBRARIES}
@@ -82,3 +84,12 @@ add_library(pdf_presenter_console_test_library
 	EXCLUDE_FROM_ALL
 	${VALA_C} presenter.h presenter.vapi
 )
+
+install(FILES
+        ui/main.ui
+	ui/about.ui
+	ui/settings.ui
+DESTINATION
+        share/pdfpc
+)
+

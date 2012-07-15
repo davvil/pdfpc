@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "es (spanish)"
+intltool-update es
+echo "gl (galego)"
+intltool-update gl

@@ -674,6 +674,22 @@ namespace pdfpc {
             }
         }
 
+		/**
+		 * Callback to be notified when a presentation window has been closed by the user
+		 */
+
+		public void closed_window() {
+
+			signal_close_presentation ();
+			
+		}
+
+		/**
+		 * This signal is emited when the user wants to exit the presentation
+		 */
+
+		public signal void signal_close_presentation();
+		
         /**
          * Notify the controllables that they have to update the view
          */
@@ -828,7 +844,7 @@ namespace pdfpc {
 
         protected void quit() {
             this.metadata.save_to_disk();
-            Gtk.main_quit();              
+            signal_close_presentation ();            
         }
 
         /**

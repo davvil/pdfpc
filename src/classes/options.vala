@@ -26,12 +26,24 @@ namespace pdfpc {
      * information and their default values.
      */
     public class Options: GLib.Object {
+
+		/**
+		 * Commandline option to force launching the presentation without showing the GUI
+		 */
+		public static bool run_now = false;
+		
         /**
          * Commandline option specifying if the presenter and presentation screen
          * should be switched.
          */
         public static bool display_switch = false;
 
+		/**
+         * Commandline option specifying if the presenter and presentation screen
+         * should not be switched.
+         */
+        public static bool display_unswitch = false;
+		
         /**
          * Commandline option to force using only one screen.
          */

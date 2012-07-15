@@ -1,0 +1,85 @@
+# Copyright (C) 2012
+# This file is distributed under the same license as the pdf_presenter_console package.
+# FULL NAME <EMAIL@ADDRESS>, 2012.
+# Sergio Costas <raster@rastersoft.com>, 2012.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 2.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-07-15 13:54+0200\n"
+"PO-Revision-Date: 2012-07-15 13:54+0200\n"
+"Last-Translator: Sergio Costas <raster@rastersoft.com>\n"
+"Language-Team: Español; Castellano <raster@rastersoft.com>\n"
+"Language: spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bits\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+
+#: ../src/pdfpc.vala:427
+#, c-format
+msgid "Invalid parameter in config file %s (line %d)\n"
+msgstr "Parámetro non válido no arquivo de configurazón %s (liña %d)\n"
+
+#: ../src/pdfpc.vala:546
+msgid "All"
+msgstr "Todos"
+
+#: ../src/classes/timer_label.vala:317 ../src/classes/timer_label.vala:323
+msgid "Until %H:%M"
+msgstr "Ata as %H:%M"
+
+#: ../src/ui/about.ui.h:1
+msgid ""
+"2009-2011 Jakob Westhoff\n"
+"2012 David Vilar Torres"
+msgstr ""
+"2009-2011 Jakob Westhoff\n"
+"2012 David Vilar Torres"
+
+#: ../src/ui/main.ui.h:1
+msgid "PDF Presentation Console"
+msgstr "Pdf Presentation Console"
+
+#: ../src/ui/main.ui.h:2
+msgid "Presentation file: "
+msgstr "Presentación: "
+
+#: ../src/ui/main.ui.h:3
+msgid "Alert time (in minutes):"
+msgstr "Instante de alerta (en minutos):"
+
+#: ../src/ui/main.ui.h:4
+msgid "Duration (in minutes): "
+msgstr "Durazón (en minutos):"
+
+#: ../src/ui/main.ui.h:5
+msgid "End time:"
+msgstr "Hora de fin:"
+
+#: ../src/ui/main.ui.h:6
+msgid ":"
+msgstr ":"
+
+#: ../src/ui/main.ui.h:7
+msgid "Add additional slide in black at the end"
+msgstr "Engadir ó final unha diapositiva en negro"
+
+#: ../src/ui/settings.ui.h:1
+msgid "Settings"
+msgstr "Preferencias"
+
+#: ../src/ui/settings.ui.h:2
+msgid "Switch screens"
+msgstr "Intercambiar pantaias"
+
+#: ../src/ui/settings.ui.h:3
+msgid "Size for current slide (percentage):"
+msgstr "Tamaño para a diapositiva actual (porcentaxe):"
+
+#~ msgid "PDF PC"
+#~ msgstr "PDF PC"
+
+#~ msgid "Advanced options"
+#~ msgstr "Opcións avanzadas"
