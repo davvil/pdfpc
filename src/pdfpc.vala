@@ -317,6 +317,7 @@ namespace pdfpc {
 				GLib.stdout.printf("Found metadata file\n");
 			} catch {
 				GLib.stdout.printf("No metadata file found\n");
+				this.refresh_status ();
 				return;
 			}
 			
