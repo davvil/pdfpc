@@ -1,4 +1,5 @@
 file(GLOB list_po RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.po)
+file(GLOB list_mo RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.mo)
 
 foreach(file_po ${list_po})
 	string(REPLACE ".po" ".mo" file_mo ${file_po})
@@ -8,16 +9,13 @@ foreach(file_po ${list_po})
         )
 endforeach()
 
-install(FILES
-        es.mo
-DESTINATION
-        share/locale/es/LC_MESSAGES
-RENAME pdfpc.mo
-)
+foreach(file_mo ${list_mo})
+	string(REPLACE ".mo" "" file_lang ${file_mo})
+	install(FILES
+        	${file_mo}
+	DESTINATION
+        	share/locale/${file_lang}/LC_MESSAGES
+	RENAME pdfpc.mo
+	)
+endforeach()
 
-install(FILES
-        gl.mo
-DESTINATION
-        share/locale/gl/LC_MESSAGES
-RENAME pdfpc.mo
-)
