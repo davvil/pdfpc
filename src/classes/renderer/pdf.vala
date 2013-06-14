@@ -44,6 +44,11 @@ namespace pdfpc {
          * Cache store to be used
          */
         protected Renderer.Cache.Base cache = null;
+        
+        /**
+         * Beamer notes position
+         */
+         protected string? beamer_notes_position = null;
 
         /**
          * Base constructor taking a pdf metadata object as well as the desired
@@ -54,10 +59,11 @@ namespace pdfpc {
          * pdf document the renderspace is filled up completely cutting of a
          * part of the pdf document.
          */
-        public Pdf( Metadata.Pdf metadata, int width, int height, Metadata.Area area ) {
+        public Pdf( Metadata.Pdf metadata, int width, int height, Metadata.Area area, string? beamer_notes_position ) {
             base( metadata, width, height );
 
             this.area = area;
+            this.beamer_notes_position = beamer_notes_position;
 
             // Calculate the scaling factor needed.
             this.scaling_factor = Math.fmax( 
@@ -117,6 +123,13 @@ namespace pdfpc {
             cr.set_source_rgb( 255, 255, 255 );
             cr.rectangle( 0, 0, this.width, this.height );
             cr.fill();
+            
+            //Nothing to do for "right"
+            if(this.beamer_notes_position == "left")
+				cr.translate(-this.width,0);
+			//Nothing to do for "bottom"
+			if(this.beamer_notes_position == "top")
+				cr.translate(0, -this.height);
 
             cr.scale(this.scaling_factor, this.scaling_factor);
             cr.translate(-metadata.get_horizontal_offset(this.area), -metadata.get_vertical_offset(this.area));

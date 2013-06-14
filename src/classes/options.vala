@@ -104,5 +104,10 @@ namespace pdfpc {
          * Position of notes on slides
          */
         public static string? notes_position = null;
+        
+        /**
+         * Position of beamer notes
+         */
+         public static string? beamer_notes_position = null;
     }
 }

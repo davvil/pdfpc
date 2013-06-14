@@ -71,6 +71,7 @@ namespace pdfpc.Window {
                 Metadata.Area.CONTENT,
                 Options.black_on_end,
                 true,
+                Options.beamer_notes_position,
                 this.presentation_controller,
                 out scale_rect
             );

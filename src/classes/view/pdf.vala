@@ -59,18 +59,27 @@ namespace pdfpc {
         public static View.Pdf from_metadata( Metadata.Pdf metadata, int width, int height,
                                               Metadata.Area area,
                                               bool allow_black_on_end, bool clickable_links,
+                                              string? beamer_notes_position,
                                               PresentationController presentation_controller,
                                               out Rectangle scale_rect = null ) {
-            var scaler = new Scaler( 
-                metadata.get_page_width(),
-                metadata.get_page_height()
+            int scaler_width = 1;
+            int scaler_height = 1;
+            if(beamer_notes_position == "left" || beamer_notes_position == "right" )
+				scaler_width = 2;
+			if(beamer_notes_position == "top" || beamer_notes_position == "bottom" )
+				scaler_height = 2;
+					
+            var scaler = new Scaler(
+                metadata.get_page_width()/scaler_width,
+                metadata.get_page_height()/scaler_height
             );
             scale_rect = scaler.scale_to( width, height );
             var renderer = new Renderer.Pdf( 
                 metadata,
                 scale_rect.width,
                 scale_rect.height,
-                area
+                area,
+                beamer_notes_position
             );
             
             return new View.Pdf( renderer, allow_black_on_end, clickable_links, presentation_controller );
