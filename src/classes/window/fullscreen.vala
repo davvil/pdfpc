@@ -53,21 +53,43 @@ namespace pdfpc.Window {
          */
         protected bool frozen = false;
 
-        public Fullscreen( int screen_num ) {
+        /**
+         * Screen and monitor number
+         */
+        protected int screen_num = -1;
+        protected int monitor_num = -1;
+
+        public Fullscreen( int screen_num, int monitor_num ) {
+            var display = Gdk.Display.get_default();
             Gdk.Screen screen;
 
-            if ( screen_num >= 0 ) {
-                // Start in the given monitor
-                screen = Screen.get_default();
-                screen.get_monitor_geometry( screen_num, out this.screen_geometry );
-            } else {
-                // Start in the monitor the cursor is in
-                var display = Gdk.Display.get_default();
-                int pointerx, pointery;
-                display.get_pointer(out screen, out pointerx, out pointery, null);
-                int current_screen = screen.get_monitor_at_point(pointerx, pointery);
-                screen.get_monitor_geometry( current_screen, out this.screen_geometry );
+            // Start in the given screen
+            if (screen_num >= 0) {
+                screen = display.get_screen(screen_num);
+                if ( monitor_num >= 0 ) {
+                    // Start in the given monitor
+                    screen.get_monitor_geometry( monitor_num, out this.screen_geometry );
+                } else {
+                    // Start in the primary monitor
+                    monitor_num = screen.get_primary_monitor();
+                    screen.get_monitor_geometry( monitor_num, out this.screen_geometry );
+                }
+            } else { // Start in default screen
+                if ( monitor_num >= 0 ) {
+                    // Start in the given monitor
+                    screen = Screen.get_default();
+                    screen.get_monitor_geometry( monitor_num, out this.screen_geometry );
+                } else {
+                    // Start in the monitor the cursor is in
+                    int pointerx, pointery;
+                    display.get_pointer(out screen, out pointerx, out pointery, null);
+                    monitor_num = screen.get_monitor_at_point(pointerx, pointery);
+                    screen.get_monitor_geometry( monitor_num, out this.screen_geometry );
+                }
             }
+            this.set_screen(screen);
+            this.screen_num = screen_num;
+            this.monitor_num = monitor_num;
 
             if ( !Options.windowed ) {
                 // Move to the correct monitor

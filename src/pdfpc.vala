@@ -75,6 +75,7 @@ namespace pdfpc {
             { "list-actions", 'L', 0, 0, ref Options.list_actions, "List actions supported in the config file(s)", null},
             { "windowed", 'w', 0, 0, ref Options.windowed, "Run in windowed mode (devel tool)", null},
             { "notes", 'n', 0, OptionArg.STRING, ref Options.notes_position, "Position of notes on the pdf page (either left, right, top or bottom)", "P"},
+            { "other-screen", 'O', 0, OptionArg.STRING, ref Options.other_screen, "Other screen[/monitor] to use", "P"},
             { null }
         };
 
@@ -108,8 +109,8 @@ namespace pdfpc {
          * Create and return a PresenterWindow using the specified monitor
          * while displaying the given file
          */
-        private Window.Presenter create_presenter_window( Metadata.Pdf metadata, int monitor ) {
-            var presenter_window = new Window.Presenter( metadata, monitor, this.controller );
+        private Window.Presenter create_presenter_window( Metadata.Pdf metadata, int monitor, int screen = -1 ) {
+            var presenter_window = new Window.Presenter( metadata, screen, monitor, this.controller );
             //controller.register_controllable( presenter_window );
             presenter_window.set_cache_observer( this.cache_status );
 
@@ -120,8 +121,8 @@ namespace pdfpc {
          * Create and return a PresentationWindow using the specified monitor
          * while displaying the given file
          */
-        private Window.Presentation create_presentation_window( Metadata.Pdf metadata, int monitor ) {
-            var presentation_window = new Window.Presentation( metadata, monitor, this.controller );
+        private Window.Presentation create_presentation_window( Metadata.Pdf metadata, int monitor, int screen = -1 ) {
+            var presentation_window = new Window.Presentation( metadata, screen, monitor, this.controller );
             //controller.register_controllable( presentation_window );
             presentation_window.set_cache_observer( this.cache_status );
 
@@ -179,8 +180,53 @@ namespace pdfpc {
             configFileReader.readConfig(etc_path + "/pdfpcrc");
             configFileReader.readConfig(Environment.get_home_dir() + "/.pdfpcrc");
 
-            var screen = Gdk.Screen.get_default();
-            if ( !Options.windowed && !Options.single_screen && screen.get_n_monitors() > 1 ) {
+            Gdk.Screen  screen = Gdk.Screen.get_default();
+            Gdk.Screen? other_screen = null;
+
+            /* other screen can set screen and/or monitor */
+            var other_option = pdfpc.ScreenMonitorNum.from_string(Options.other_screen);
+            if (other_option.screen_num >= 0 || other_option.monitor_num >= 0) {
+                var display = screen.get_display();
+                if (other_option.screen_num >= display.get_n_screens()) {
+                    other_option.screen_num = -1;
+                }
+                if (other_option.screen_num < 0) {
+                    other_option.screen_num = screen.get_number();
+                }
+
+                other_screen = display.get_screen(other_option.screen_num);
+                if (other_screen != null) {
+                    if (other_option.monitor_num >= other_screen.get_n_monitors()) {
+                        other_option.monitor_num = -1;
+                    }
+                    if (other_option.monitor_num < 0) {
+                        other_option.monitor_num = other_screen.get_primary_monitor();
+                    }
+                    if (other_option.monitor_num < 0) {
+                        other_screen = null;
+                    }
+                }
+            }
+
+            if ( !Options.windowed && !Options.single_screen && other_screen != null ) {
+                int presenter_screen, presentation_screen;
+                int presenter_monitor, presentation_monitor;
+                if ( Options.display_switch != true ) {
+                    presenter_screen     = screen.get_number();
+                    presenter_monitor    = screen.get_primary_monitor();
+                    presentation_screen  = other_screen.get_number();
+                    presentation_monitor = other_option.monitor_num;
+                } else {
+                    presenter_screen     = other_screen.get_number();
+                    presenter_monitor    = other_option.monitor_num;
+                    presentation_screen  = screen.get_number();
+                    presentation_monitor = screen.get_primary_monitor();
+                }
+                this.presenter_window = 
+                    this.create_presenter_window( metadata, presenter_monitor, presenter_screen );
+                this.presentation_window = 
+                    this.create_presentation_window( metadata, presentation_monitor, presentation_screen );
+            } else if ( !Options.windowed && !Options.single_screen && screen.get_n_monitors() > 1 ) {
                 int presenter_monitor, presentation_monitor;
                 if ( Options.display_switch != true )
                     presenter_monitor    = screen.get_primary_monitor();
