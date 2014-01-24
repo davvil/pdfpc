@@ -158,7 +158,7 @@ namespace pdfpc {
 			if (pdfFilename == null) {
 				stderr.printf( "Error: No pdf file given\n");
 				Posix.exit(1);
-			} else if (!GLib.FileUtils.test(pdfFilename, (GLib.FileTest.EXISTS & GLib.FileTest.IS_REGULAR))) {
+			} else if (!GLib.FileUtils.test(pdfFilename, (GLib.FileTest.IS_REGULAR))) {
                 stderr.printf( "Error: pdf file not found\n");
                 Posix.exit(1);
             }
