@@ -4,17 +4,17 @@
  * This file is part of pdfpc.
  *
  * Copyright (C) 2010-2011 Jakob Westhoff <jakob@westhoffswelt.de>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
@@ -89,7 +89,7 @@ namespace pdfpc {
             var context = new OptionContext( "<pdf-file>" );
 
             context.add_main_entries( options, null );
-            
+
             try {
                 context.parse( ref args );
             }
@@ -160,24 +160,24 @@ namespace pdfpc {
                 stderr.printf( "Error: No pdf file given\n");
                 Posix.exit(1);
             }
-            
+
             // parse size option
             // should be in the width:height format
 
             int width = -1, height = -1;
-            if ( Options.size != null ) 
+            if ( Options.size != null )
             {
                 int colonIndex = Options.size.index_of(":");
-                
+
                 width = int.parse(Options.size.substring(0, colonIndex));
                 height = int.parse(Options.size.substring(colonIndex + 1));
-                
+
                 if (width < 1 || height < 1) {
                     stderr.printf( "Error: Failed to parse size\n");
                     Posix.exit(1);
-                    
+
                 }
-                
+
                 Options.windowed = true;
             }
 
@@ -190,7 +190,7 @@ namespace pdfpc {
             var metadata = new Metadata.Pdf( pdfFilename, notes_position );
             if ( Options.duration != 987654321u )
                 metadata.set_duration(Options.duration);
-                
+
 
             // Initialize global controller and CacheStatus, to manage
             // crosscutting concerns between the different windows.
@@ -200,7 +200,7 @@ namespace pdfpc {
             ConfigFileReader configFileReader = new ConfigFileReader(this.controller);
             configFileReader.readConfig(etc_path + "/pdfpcrc");
             configFileReader.readConfig(Environment.get_home_dir() + "/.pdfpcrc");
-            
+
             var screen = Gdk.Screen.get_default();
             if ( !Options.windowed && !Options.single_screen && screen.get_n_monitors() > 1 ) {
                 int presenter_monitor, presentation_monitor;
@@ -209,9 +209,9 @@ namespace pdfpc {
                 else
                     presenter_monitor    = (screen.get_primary_monitor() + 1) % 2;
                 presentation_monitor = (presenter_monitor + 1) % 2;
-                this.presenter_window = 
+                this.presenter_window =
                     this.create_presenter_window( metadata, presenter_monitor );
-                this.presentation_window = 
+                this.presentation_window =
                     this.create_presentation_window( metadata, presentation_monitor, width, height );
             } else if (Options.windowed && !Options.single_screen) {
                 this.presenter_window =
@@ -233,7 +233,7 @@ namespace pdfpc {
                 this.presentation_window.show_all();
                 this.presentation_window.update();
             }
-            
+
             if ( this.presenter_window != null ) {
                 this.presenter_window.show_all();
                 this.presenter_window.update();
