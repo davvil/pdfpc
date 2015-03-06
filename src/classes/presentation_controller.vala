@@ -274,7 +274,7 @@ namespace pdfpc {
          * Bind the (user-defined) keys
          */
         public void bind(uint keycode, uint modMask, string function) {
-            if (this.actionNames.contains(function)) {
+            if (this.actionNames.has_key(function)) {
                 this.keyBindings.set(new KeyDef(keycode, modMask), this.actionNames[function]);
             } else
                 stderr.printf("Warning: Unknown function %s\n", function);
@@ -298,7 +298,7 @@ namespace pdfpc {
          * Bind the (user-defined) keys
          */
         public void bindMouse(uint button, uint modMask, string function) {
-            if (this.actionNames.contains(function)) {
+            if (this.actionNames.has_key(function)) {
                 this.mouseBindings.set(new KeyDef(button, modMask), this.actionNames[function]);
             } else
                 stderr.printf("Warning: Unknown function %s\n", function);

@@ -164,7 +164,7 @@ namespace pdfpc.Window {
                 Source.remove( this.hide_cursor_timeout );
             }
 
-            this.hide_cursor_timeout = Timeout.add_seconds(
+            this.hide_cursor_timeout = GLib.Timeout.add_seconds(
                 5,
                 this.on_hide_cursor_timeout
             );
