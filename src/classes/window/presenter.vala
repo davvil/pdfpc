@@ -137,8 +137,8 @@ namespace pdfpc.Window {
         /**
          * Base constructor instantiating a new presenter window
          */
-        public Presenter( Metadata.Pdf metadata, int screen_num, PresentationController presentation_controller ) {
-            base( screen_num );
+        public Presenter( Metadata.Pdf metadata, int screen_num, int monitor_num, PresentationController presentation_controller ) {
+            base( screen_num, monitor_num );
             this.role = "presenter";
 
             this.destroy.connect( (source) => {

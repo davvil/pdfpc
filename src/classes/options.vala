@@ -104,5 +104,50 @@ namespace pdfpc {
          * Position of notes on slides
          */
         public static string? notes_position = null;
+
+        /**
+         * Other screen to use
+         */
+        public static string? other_screen = null;
+    }
+
+    /**
+     * Screen number and monitor number passed in as
+     * [ScreenNum][/MonitorNum]
+     */
+    public struct ScreenMonitorNum {
+        /**
+         * Screen number, default to unspecified (-1)
+         */
+        public int screen_num;
+
+        /**
+         * Monitor number, default to unspecified (-1)
+         */
+        public int monitor_num;
+
+        /**
+         * Parse options into this structure
+         * [ScreenNum][/MonitorNum]
+         */
+        public ScreenMonitorNum(string? screen_monitor_str) {
+            this.screen_num  = -1;
+            this.monitor_num = -1;
+
+            if (screen_monitor_str == null) {
+                return;
+            }
+
+            if (screen_monitor_str.scanf("%d/%d", &this.screen_num, &this.monitor_num) <= 0) {
+                screen_monitor_str.scanf("/%d", &this.monitor_num);
+            }
+        }
+
+        /**
+         * Parse options into new structure
+         */
+        public static ScreenMonitorNum from_string(string? screen_monitor_str) {
+            return ScreenMonitorNum(screen_monitor_str);
+        }
     }
 }
