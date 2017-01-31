@@ -175,6 +175,7 @@ namespace pdfpc.Window {
                 Metadata.Area.NOTES,
                 Options.black_on_end,
                 true,
+                this.invert_beamer_notes_position(Options.beamer_notes_position),
                 this.presentation_controller,
                 out current_scale_rect
             );
@@ -193,6 +194,7 @@ namespace pdfpc.Window {
                 Metadata.Area.CONTENT,
                 true,
                 false,
+                Options.beamer_notes_position,
                 this.presentation_controller,
                 out next_scale_rect
             );
@@ -204,6 +206,7 @@ namespace pdfpc.Window {
                 Metadata.Area.CONTENT,
                 true,
                 false,
+                Options.beamer_notes_position,
                 this.presentation_controller,
                 out next_scale_rect
             );
@@ -214,6 +217,7 @@ namespace pdfpc.Window {
                 Metadata.Area.CONTENT,
                 true,
                 false,
+                Options.beamer_notes_position,
                 this.presentation_controller,
                 out next_scale_rect
             );
@@ -642,5 +646,18 @@ namespace pdfpc.Window {
         public View.Pdf? get_main_view() {
             return this.current_view as View.Pdf;
         }
+        
+        protected string? invert_beamer_notes_position(string? beamer_notes_position)
+        {
+			if(beamer_notes_position == "left")
+				return "right";
+			if(beamer_notes_position == "right")
+				return "left";
+			if(beamer_notes_position == "top")
+				return "bottom";
+			if(beamer_notes_position == "bottom")
+				return "top";
+			return null;
+		}
     }
 }

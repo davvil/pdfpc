@@ -75,6 +75,7 @@ namespace pdfpc {
             { "list-actions", 'L', 0, 0, ref Options.list_actions, "List actions supported in the config file(s)", null},
             { "windowed", 'w', 0, 0, ref Options.windowed, "Run in windowed mode (devel tool)", null},
             { "notes", 'n', 0, OptionArg.STRING, ref Options.notes_position, "Position of notes on the pdf page (either left, right, top or bottom)", "P"},
+            { "beamer-notes", 'N', 0, OptionArg.STRING, ref Options.beamer_notes_position, "Position of beamer notes on the pdf page (either left, right, top or bottom)", "P"},
             { null }
         };
 
